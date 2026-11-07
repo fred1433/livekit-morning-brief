@@ -32,6 +32,8 @@ a:focus-visible,button:focus-visible,summary:focus-visible,.row:focus-visible{ou
 .lede{margin-top:18px;font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--ink-2);max-width:56ch}
 .stamp{justify-self:end;text-align:right;font-size:14px;color:var(--ink-2);line-height:1.45;padding-bottom:6px}
 .stamp b{display:block;font-size:15px;color:var(--ink);font-weight:700}
+.stamp .dot{margin:0 .2em 0 .45em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* the stage: film + board */
 .stage{display:grid;grid-template-columns:360px minmax(0,1fr);gap:36px;align-items:start;padding-bottom:64px}
@@ -152,7 +154,7 @@ footer a.cal{font-weight:800;color:var(--ink);font-size:17px}
       <h1 class="asked"><q>Which Amsterdam arrivals still need checking?</q></h1>
       <p class="lede">A one-minute call to a voice agent running on Ubuntu with LiveKit. It reads a read-only API, hands two flights to a Claude skill, answers another question while Claude works, then gives the result without being asked again.</p>
     </div>
-    <p class="stamp"><b>Recorded LiveKit call&nbsp;·&nbsp;Fictional flight data</b>Snapshot of six overnight arrivals at 07:00<br>Caller voice pre-recorded, agent live</p>
+    <p class="stamp"><b>Recorded LiveKit call<span class="dot" aria-hidden="true">·</span><span class="sr">,</span> Fictional flight data</b>Snapshot of six overnight arrivals at 07:00<br>Caller voice pre-recorded, agent live</p>
   </header>
 
   <section class="stage" aria-label="The recorded call">

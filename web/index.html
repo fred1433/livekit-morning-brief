@@ -181,7 +181,10 @@ async function start() {
     levelLoop(an); mark('agent_track');
   });
   room.on(LK.RoomEvent.ParticipantAttributesChanged, (changed, p) => { if (!p.isLocal) onAttrs(p.attributes); });
-  room.on(LK.RoomEvent.Disconnected, () => { mark('disconnected'); $('call').textContent = 'Call ended'; $('call').classList.remove('live'); });
+  room.on(LK.RoomEvent.Disconnected, () => {
+    mark('disconnected'); room = null; clearInterval(checkTimer);
+    $('call').textContent = 'Start the brief again'; $('call').classList.remove('live');
+  });
   room.registerTextStreamHandler('lk.transcription', async (reader, info) => {
     const who = info.identity === room.localParticipant.identity ? 'user' : 'agent';
     const id = reader.info.attributes?.['lk.segment_id'] || reader.info.id;

@@ -18,5 +18,6 @@ uv pip install -q -p .venv/bin/python -r requirements.txt
 chown -R morningbrief: /opt/morning-brief
 install -m 644 deploy/morning-brief-*.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable --now morning-brief-api morning-brief-web morning-brief-agent
+systemctl enable morning-brief-api morning-brief-web morning-brief-agent
+systemctl restart morning-brief-api morning-brief-web morning-brief-agent   # picks up new code on a re-run
 systemctl --no-pager --lines=0 status morning-brief-agent | head -5

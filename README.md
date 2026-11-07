@@ -103,14 +103,14 @@ start the Claude check on the first ask. The film on the demo page is one call, 
 
 ```bash
 .venv/bin/python tests/test_contract.py         # webhook: success, duplicate, deadline passed, caller hung up
-.venv/bin/python tests/test_validator.py        # eight plausible wrong answers from Claude, all rejected
+.venv/bin/python tests/test_validator.py        # seven plausible wrong answers from Claude rejected, the right one kept
 .venv/bin/python tests/test_read_only.py        # writes refused by the API, no write tool in the agent
 .venv/bin/python tests/test_skill_inversion.py  # real claude -p: move the 06:12 confirmation, the answer flips
 ```
 
 ## Filming a call yourself
 
-With the stack running: `python tools/film_call.py "http://127.0.0.1:8303/?film=1" out/` (needs
-Playwright). The caller's lines are pre-recorded clips in `web/static/scene/`; everything the
+Install Playwright once (`uv pip install -p .venv/bin/python playwright && .venv/bin/playwright install chromium`),
+then, with the stack running: `.venv/bin/python tools/film_call.py "http://127.0.0.1:8303/?film=1" out/`. The caller's lines are pre-recorded clips in `web/static/scene/`; everything the
 agent says is produced live. `tools/measure_take.py` turns the take into the timeline and delays,
 `tools/build_site.py` builds the demo page from those files.
