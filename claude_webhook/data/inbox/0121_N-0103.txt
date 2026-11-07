@@ -1,0 +1,7 @@
+FICTIONAL CARRIER NOTE (demo data, invented)
+note_id: N-0103
+flight: 4127  HKG -> AMS
+received: 2026-11-09 01:21 (Amsterdam)
+from: carrier ops
+
+4127 airborne on time, ETA AMS 01:40 local. 3 ULDs on board.

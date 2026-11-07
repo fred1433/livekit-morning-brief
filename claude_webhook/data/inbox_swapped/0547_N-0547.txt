@@ -1,0 +1,8 @@
+FICTIONAL CARRIER NOTE (demo data, invented; swapped set for the inversion test)
+note_id: N-0547
+flight: 5188  ICN -> AMS
+received: 2026-11-09 05:47 (Amsterdam)
+from: carrier ops
+
+Update on 5188: further delay en route. Revised ETA AMS 07:40 local.
+We will confirm on-block time once landed. No arrival confirmation at this stage.

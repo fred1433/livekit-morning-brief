@@ -1,0 +1,7 @@
+FICTIONAL CARRIER NOTE (demo data, invented)
+note_id: N-0152
+flight: 4127  HKG -> AMS
+received: 2026-11-09 01:52 (Amsterdam)
+from: handling desk
+
+4127 on block 01:48. Breakdown started.

@@ -1,0 +1,17 @@
+[Unit]
+Description=Morning brief voice agent (LiveKit Agents worker, connects out to LiveKit Cloud)
+After=network-online.target morning-brief-api.service
+Wants=network-online.target
+
+[Service]
+User=morningbrief
+WorkingDirectory=/opt/morning-brief
+EnvironmentFile=/etc/morning-brief/env
+ExecStart=/opt/morning-brief/.venv/bin/python agent/agent.py start
+Restart=always
+RestartSec=3
+# on stop, the worker stops taking calls and lets live calls finish, up to this limit
+TimeoutStopSec=90
+
+[Install]
+WantedBy=multi-user.target

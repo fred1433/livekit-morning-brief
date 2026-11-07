@@ -1,0 +1,68 @@
+{
+  "_notice": "FICTIONAL DATA built for this prototype. Flight numbers, times and waybill counts are invented; nothing here comes from a real system.",
+  "snapshot_at": "2026-11-09T07:00:00+01:00",
+  "port_of_arrival": "AMS",
+  "window_start": "2026-11-09T00:00:00+01:00",
+  "flights": [
+    {
+      "number": 4127,
+      "departure_airport": "HKG",
+      "port_of_arrival": "AMS",
+      "arrival_scheduled_at": "2026-11-09T01:35:00+01:00",
+      "arrival_estimated_at": "2026-11-09T01:40:00+01:00",
+      "arrival_actual_at": "2026-11-09T01:48:00+01:00",
+      "data_source": "cargonaut",
+      "waybills": 3
+    },
+    {
+      "number": 2210,
+      "departure_airport": "PVG",
+      "port_of_arrival": "AMS",
+      "arrival_scheduled_at": "2026-11-09T02:50:00+01:00",
+      "arrival_estimated_at": null,
+      "arrival_actual_at": "2026-11-09T02:41:00+01:00",
+      "data_source": "cargonaut",
+      "waybills": 2
+    },
+    {
+      "number": 6602,
+      "departure_airport": "SZX",
+      "port_of_arrival": "AMS",
+      "arrival_scheduled_at": "2026-11-09T03:40:00+01:00",
+      "arrival_estimated_at": "2026-11-09T04:00:00+01:00",
+      "arrival_actual_at": "2026-11-09T04:05:00+01:00",
+      "data_source": "client",
+      "waybills": 4
+    },
+    {
+      "number": 5188,
+      "departure_airport": "ICN",
+      "port_of_arrival": "AMS",
+      "arrival_scheduled_at": "2026-11-09T04:15:00+01:00",
+      "arrival_estimated_at": "2026-11-09T05:58:00+01:00",
+      "arrival_actual_at": null,
+      "data_source": "client",
+      "waybills": 2
+    },
+    {
+      "number": 3391,
+      "departure_airport": "CAN",
+      "port_of_arrival": "AMS",
+      "arrival_scheduled_at": "2026-11-09T05:20:00+01:00",
+      "arrival_estimated_at": null,
+      "arrival_actual_at": "2026-11-09T05:27:00+01:00",
+      "data_source": "cargonaut",
+      "waybills": 1
+    },
+    {
+      "number": 7745,
+      "departure_airport": "DXB",
+      "port_of_arrival": "AMS",
+      "arrival_scheduled_at": "2026-11-09T05:55:00+01:00",
+      "arrival_estimated_at": "2026-11-09T07:40:00+01:00",
+      "arrival_actual_at": null,
+      "data_source": "client",
+      "waybills": 3
+    }
+  ]
+}

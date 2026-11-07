@@ -1,0 +1,9 @@
+FICTIONAL CARRIER NOTE (demo data, invented)
+note_id: N-0631
+flight: 5188  ICN -> AMS
+received: 2026-11-09 06:31 (Amsterdam)
+from: handling desk
+
+Morning team, update on 5188. Aircraft on block AMS 06:12 local, ATA 06:12
+confirmed by ramp. 2 ULDs offloaded, breakdown starting at the handler.
+Arrival time not yet pushed to the system on our side, sorry for that.

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Morning brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --apron:#EEF1F3; --sheet:#FFFFFF; --ink:#18222E; --ink-2:#4A5866; --rule:#CDD5DB;
+  --taxi:#F2B705; --taxi-ink:#1A1400; --landed:#2E7A57; --claude:#3D5A80;
+}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--apron);color:var(--ink)}
+body{font-family:Overpass,system-ui,sans-serif;font-variant-numeric:tabular-nums;height:100dvh;overflow:hidden;
+  display:flex;flex-direction:column;max-width:480px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 0}
+header{flex:none;display:flex;align-items:baseline;justify-content:space-between;padding:6px 2px 12px}
+header h1{font-size:22px;font-weight:800;letter-spacing:-.01em}
+header p{font-size:13px;color:var(--ink-2)}
+.board{flex:none;background:var(--sheet);border-radius:14px;border:1px solid var(--rule);overflow:hidden}
+.board-head,.row{display:grid;grid-template-columns:58px 44px 1fr 1fr;align-items:center;gap:6px;padding:0 14px}
+.board-head{height:30px;font-size:12px;color:var(--ink-2);border-bottom:1px solid var(--rule)}
+.row{height:46px;border-bottom:1px solid var(--rule);font-size:17px;transition:background .5s}
+.row:last-child{border-bottom:0}
+.row .n{font-weight:800}
+.row .from{color:var(--ink-2);font-size:14px}
+.row .t{font-weight:600}
+.row .t small{display:block;font-size:11px;font-weight:400;color:var(--ink-2);line-height:1}
+.row .actual.ok{color:var(--landed)}
+.row.focus{background:var(--taxi);color:var(--taxi-ink)}
+.row.focus .from,.row.focus small{color:var(--taxi-ink)}
+.row.confirmed{background:#DCEFE4}
+.row.confirmed small{color:var(--landed)}
+.empty{padding:26px 16px;color:var(--ink-2);font-size:15px;line-height:1.4}
+.check{flex:none;margin-top:12px;border-radius:14px;padding:14px 16px;background:var(--sheet);border:1px solid var(--rule);
+  display:none;gap:12px;align-items:center}
+.check.on{display:flex}
+.check .dial{width:38px;height:38px;flex:none;border-radius:50%;border:3px solid #D5DEE8;border-top-color:var(--claude);animation:spin 1.1s linear infinite}
+.check.done .dial{animation:none;border-color:var(--landed);display:grid;place-items:center}
+.check.done .dial::after{content:"";width:12px;height:7px;border:3px solid var(--landed);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.check b{display:block;font-size:16px}
+.check span{font-size:14px;color:var(--ink-2)}
+.check .clock{margin-left:auto;font-size:20px;font-weight:800;color:var(--claude);white-space:nowrap;min-width:64px;text-align:right}
+.check.done .clock{color:var(--landed)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.captions{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:14px 2px 6px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(transparent,#000 22%);mask-image:linear-gradient(transparent,#000 22%)}
+.line{font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.38;max-width:34ch}
+.line.user{align-self:flex-end;text-align:right;color:var(--ink-2)}
+.line.agent{color:var(--ink)}
+.line .who{display:block;font-family:Overpass,sans-serif;font-size:12px;color:var(--ink-2);margin-bottom:1px}
+.dock{flex:none;padding:8px 0 10px;
+  display:flex;align-items:center;gap:14px}
+.call{flex:1;height:64px;border-radius:32px;border:0;font:800 19px Overpass,sans-serif;background:var(--ink);color:#fff;cursor:pointer}
+.call.live{background:#B3261E}
+.call:focus-visible{outline:3px solid var(--taxi);outline-offset:3px}
+.state{width:64px;height:64px;border-radius:50%;background:var(--sheet);border:1px solid var(--rule);display:grid;place-items:center}
+.bars{display:flex;gap:3px;align-items:center;height:26px}
+.bars i{width:4px;border-radius:2px;background:var(--ink-2);height:6px;transition:height .08s}
+.note{flex:none;font-size:12px;color:var(--ink-2);text-align:center;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+@media (prefers-reduced-motion:reduce){.check .dial{animation:none}}
+</style>
+</head>
+<body>
+<header><h1>Morning brief</h1><p>AMS arrivals, 07:00 snapshot</p></header>
+
+<section class="board" aria-label="Overnight arrivals">
+  <div class="board-head"><span>Flight</span><span>From</span><span>Scheduled</span><span>Arrived</span></div>
+  <div id="rows"><p class="empty">Start the brief. The agent reads the overnight arrivals and lights up the flights that still need checking.</p></div>
+</section>
+
+<section class="check" id="check" aria-live="polite">
+  <div class="dial" aria-hidden="true"></div>
+  <div><b id="checkTitle">Claude is reading the carrier notes</b><span id="checkSub"></span></div>
+  <div class="clock" id="checkClock">0.0 s</div>
+</section>
+
+<section class="captions" id="captions" aria-live="polite"></section>
+
+<div class="dock">
+  <div class="state" aria-hidden="true"><div class="bars" id="bars"><i></i><i></i><i></i><i></i><i></i></div></div>
+  <button class="call" id="call">Start the brief</button>
+</div>
+<p class="note" id="note">Fictional flight data. Nothing here comes from a real system.</p>
+
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.4/dist/livekit-client.umd.js"></script>
+<script>
+const LK = LivekitClient;
+const FILM = new URLSearchParams(location.search).has('film');
+const ev = window.__ev = [];
+const mark = (type, extra = {}) => { const e = {t: Date.now(), type, ...extra}; ev.push(e); return e; };
+const $ = id => document.getElementById(id);
+let room = null, ac = null, mixDest = null, recorder = null, chunks = [], agentLevel = 0, agentOn = false;
+let checkTimer = null;
+
+if (FILM) $('note').textContent = 'Recorded call. Caller voice pre-recorded. Fictional flight data.';
+
+function renderBoard(board, focus, confirmed = {}) {
+  if (!board || !board.length) return;
+  $('rows').innerHTML = board.map(f => {
+    const cls = confirmed[f.n] ? 'confirmed' : (focus.includes(f.n) ? 'focus' : '');
+    const arr = confirmed[f.n] ? `<span class="t actual ok">${confirmed[f.n]}<small>carrier note</small></span>`
+              : f.actual ? `<span class="t actual ok">${f.actual}</span>`
+                         : `<span class="t actual">none<small>${f.est ? 'est. ' + f.est : ''}</small></span>`;
+    return `<div class="row ${cls}" data-n="${f.n}"><span class="n">${f.n}</span><span class="from">${f.from}</span>`+
+           `<span class="t">${f.sched}</span>${arr}</div>`;
+  }).join('');
+}
+let lastBoard = [], lastFocus = [];
+function onAttrs(attrs) {
+  const get = k => { try { return attrs[k] ? JSON.parse(attrs[k]) : undefined } catch { return undefined } };
+  const board = get('board'), focus = get('focus'), check = get('check');
+  if (board && board.length) { lastBoard = board; lastFocus = focus || []; renderBoard(lastBoard, lastFocus); mark('ui_board', {focus: lastFocus}); }
+  if (check) {
+    const box = $('check');
+    if (check.state === 'running') {
+      box.className = 'check on'; mark('ui_check_running', {flights: check.flights});
+      $('checkTitle').textContent = 'Claude is reading the carrier notes';
+      $('checkSub').textContent = 'Flights ' + check.flights.join(' and ');
+      const t0 = Date.now(); clearInterval(checkTimer);
+      checkTimer = setInterval(() => $('checkClock').textContent = ((Date.now() - t0) / 1000).toFixed(1) + ' s', 100);
+    } else if (check.state === 'done') {
+      clearInterval(checkTimer); box.className = 'check on done'; mark('ui_check_done', {seconds: check.seconds});
+      $('checkTitle').textContent = 'Result ready';
+      const conf = check.result.filter(r => r.finding === 'confirmed_arrival');
+      const est = check.result.filter(r => r.finding !== 'confirmed_arrival');
+      $('checkSub').textContent = [...conf.map(r => `${r.flight} arrived ${r.time}`), ...est.map(r => `${r.flight} estimate only`)].join(', ');
+      $('checkClock').textContent = check.seconds.toFixed(1) + ' s';
+      renderBoard(lastBoard, est.map(r => r.flight), Object.fromEntries(conf.map(r => [r.flight, r.time])));
+    } else if (check.state === 'expired' || check.state === 'failed') {
+      clearInterval(checkTimer); box.className = 'check on';
+      $('checkTitle').textContent = 'No answer from Claude in time'; $('checkSub').textContent = 'Nothing was changed.';
+    }
+  }
+}
+
+const lines = new Map(); let lastLine = null;
+function caption(id, who, text) {
+  let el = lines.get(id);
+  // consecutive segments from the same speaker read as one line
+  if (!el && lastLine && lastLine.who === who && Date.now() - lastLine.at < 4000) {
+    el = lastLine.el; el.dataset.prefix = el.querySelector('.txt').textContent.trim() + ' '; lines.set(id, el);
+  }
+  if (!el) {
+    el = document.createElement('p'); el.className = 'line ' + who;
+    el.innerHTML = `<span class="who">${who === 'agent' ? 'Agent' : 'Caller'}</span><span class="txt"></span>`;
+    $('captions').appendChild(el); lines.set(id, el);
+    const all = $('captions').querySelectorAll('.line'); if (all.length > 4) all[0].remove();
+  }
+  el.querySelector('.txt').textContent = ((el.dataset.prefix || '') + text.trim()).replace(/ \./g, '.').replace(/ ,/g, ',');
+  lastLine = {who, el, at: Date.now()};
+}
+
+function levelLoop(analyser) {
+  const buf = new Float32Array(analyser.fftSize); let lastLoud = 0;
+  const bars = [...$('bars').children];
+  setInterval(() => {
+    analyser.getFloatTimeDomainData(buf);
+    let s = 0; for (const v of buf) s += v * v; const rms = Math.sqrt(s / buf.length);
+    agentLevel = rms; const now = Date.now();
+    if (rms > 0.012) { lastLoud = now; if (!agentOn) { agentOn = true; mark('agent_audio_on'); } }
+    else if (agentOn && now - lastLoud > 700) { agentOn = false; mark('agent_audio_off', {at: lastLoud}); }
+    bars.forEach((b, i) => b.style.height = (6 + Math.min(20, rms * 400 * (0.6 + ((i * 7) % 5) / 6))) + 'px');
+  }, 20);
+}
+
+async function start() {
+  $('call').disabled = true;
+  ac = new AudioContext({sampleRate: 48000}); await ac.resume();
+  mixDest = ac.createMediaStreamDestination();
+  const r = await fetch('/api/token', {method: 'POST'}); const {url, token, room: roomName} = await r.json();
+  room = new LK.Room({adaptiveStream: false});
+  room.on(LK.RoomEvent.TrackSubscribed, (track, pub, p) => {
+    if (track.kind !== 'audio') return;
+    const el = track.attach(); document.body.appendChild(el);
+    const src = ac.createMediaStreamSource(new MediaStream([track.mediaStreamTrack]));
+    const an = ac.createAnalyser(); an.fftSize = 1024; src.connect(an); src.connect(mixDest);
+    levelLoop(an); mark('agent_track');
+  });
+  room.on(LK.RoomEvent.ParticipantAttributesChanged, (changed, p) => { if (!p.isLocal) onAttrs(p.attributes); });
+  room.on(LK.RoomEvent.Disconnected, () => { mark('disconnected'); $('call').textContent = 'Call ended'; $('call').classList.remove('live'); });
+  room.registerTextStreamHandler('lk.transcription', async (reader, info) => {
+    const who = info.identity === room.localParticipant.identity ? 'user' : 'agent';
+    const id = reader.info.attributes?.['lk.segment_id'] || reader.info.id;
+    let text = '';
+    for await (const chunk of reader) { text += chunk; caption(id, who, text); }
+    mark('transcript', {who, id, text});
+  });
+  await room.connect(url, token); mark('connected', {room: roomName});
+  if (FILM) {
+    const track = mixDest.stream && ac.createMediaStreamDestination();
+    window.__mic = track;
+    await room.localParticipant.publishTrack(track.stream.getAudioTracks()[0], {source: LK.Track.Source.Microphone, name: 'caller-prerecorded'});
+    recorder = new MediaRecorder(mixDest.stream, {mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 128000});
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstart = () => mark('recorder_start');
+    recorder.start(250);
+  } else {
+    await room.localParticipant.setMicrophoneEnabled(true);
+  }
+  $('call').disabled = false; $('call').textContent = 'End the brief'; $('call').classList.add('live');
+}
+
+$('call').onclick = async () => {
+  if (!room) return start().catch(e => { $('note').textContent = 'Could not start the call: ' + e.message; $('call').disabled = false; });
+  await room.disconnect();
+};
+
+// ---- film mode: plays the pre-recorded caller lines into the published microphone track ----
+window.__playClip = async (name, text) => {
+  const buf = await (await fetch('/static/scene/' + name + '.wav')).arrayBuffer();
+  const audio = await ac.decodeAudioData(buf);
+  const src = ac.createBufferSource(); src.buffer = audio;
+  src.connect(window.__mic); src.connect(mixDest);
+  const done = new Promise(res => src.onended = res);
+  mark('clip_start', {name, text, duration: audio.duration}); src.start();
+  await done; mark('clip_end', {name});
+};
+window.__agentOn = () => agentOn;
+window.__stopRecording = () => new Promise(res => {
+  recorder.onstop = async () => {
+    const blob = new Blob(chunks, {type: 'audio/webm'});
+    const b = new Uint8Array(await blob.arrayBuffer()); let s = '';
+    for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+    res(btoa(s));
+  };
+  recorder.stop();
+});
+window.__start = start;
+window.__hangup = () => room.disconnect();
+</script>
+</body>
+</html>

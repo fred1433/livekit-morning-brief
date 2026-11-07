@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Morning arrivals brief</title>
+<meta name="description" content="A recorded call to a LiveKit voice agent on Ubuntu: it reads a read-only API, hands two flights to a Claude skill, and keeps answering while Claude works. Fictional flight data.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --apron:#EEF1F3; --sheet:#FFFFFF; --ink:#18222E; --ink-2:#4A5866; --ink-3:#6B7884; --rule:#D3DAE0;
+  --taxi:#F2B705; --taxi-soft:#FCEFC2; --taxi-ink:#1A1400; --landed:#2E7A57; --landed-soft:#DCEFE4; --claude:#3D5A80;
+  --serif:"Source Serif 4",Georgia,serif; --sans:Overpass,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--apron)}
+body{background:var(--apron);color:var(--ink);font-family:var(--sans);font-variant-numeric:tabular-nums;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+a:focus-visible,button:focus-visible,summary:focus-visible,.row:focus-visible{outline:3px solid var(--taxi);outline-offset:2px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* opening */
+.top{padding:56px 0 30px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:end}
+.asked{font-family:var(--sans);font-weight:900;font-size:clamp(34px,4.6vw,56px);line-height:1.02;letter-spacing:-.025em;max-width:15ch}
+.asked q{quotes:none}
+.lede{margin-top:18px;font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--ink-2);max-width:56ch}
+.stamp{justify-self:end;text-align:right;font-size:14px;color:var(--ink-2);line-height:1.45;padding-bottom:6px}
+.stamp b{display:block;font-size:15px;color:var(--ink);font-weight:700}
+
+/* the stage: film + board */
+.stage{display:grid;grid-template-columns:360px minmax(0,1fr);gap:36px;align-items:start;padding-bottom:64px}
+.film{position:sticky;top:20px}
+.film video{display:block;width:360px;height:auto;aspect-ratio:390/844;border-radius:28px;background:#dfe5ea;
+  box-shadow:0 0 0 1px rgba(24,34,46,.10),0 18px 40px -18px rgba(24,34,46,.35)}
+.film p{margin-top:12px;font-size:13px;color:var(--ink-3);line-height:1.45}
+
+.board{background:var(--sheet);border-radius:16px;box-shadow:0 0 0 1px var(--rule);overflow:hidden}
+.board-head{display:grid;grid-template-columns:64px 92px 1fr;gap:16px;padding:12px 22px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--ink-3)}
+.rows{position:relative}
+.row{display:grid;grid-template-columns:64px 92px 1fr;gap:16px;padding:14px 22px;border-bottom:1px solid var(--rule);cursor:pointer;position:relative;transition:background .25s}
+.row:last-child{border-bottom:0}
+.row .t{font-weight:800;font-size:17px;padding-top:1px}
+.row .who{font-size:14px;color:var(--ink-2);padding-top:3px}
+.row .said{font-family:var(--serif);font-size:18px;line-height:1.45}
+.row.caller .said{color:var(--ink-2);font-style:italic}
+.row.now{background:#F4F7F9}
+.row.now .t{color:var(--claude)}
+.row .gap{display:block;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--ink-3);margin-top:4px}
+.row.inwait{background:var(--taxi-soft)}
+.row.inwait.now{background:#F9E39A}
+.row.result{background:var(--landed-soft)}
+.row.result.now{background:#C8E6D4}
+
+/* the wait: one band, the page's single loud element */
+.wait{display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:12px 22px;background:var(--taxi);color:var(--taxi-ink)}
+.wait .t{font-weight:900;font-size:17px}
+.wait .what{font-weight:700;font-size:16px;line-height:1.3}
+.wait .what span{display:block;font-weight:400;font-size:14px}
+.wait .clock{font-weight:900;font-size:26px;letter-spacing:-.01em;white-space:nowrap}
+.wait.back{background:var(--landed);color:#fff}
+.meter{height:4px;background:rgba(26,20,0,.15);grid-column:1/-1;border-radius:2px;overflow:hidden;margin-top:2px}
+.meter i{display:block;height:100%;width:0;background:var(--taxi-ink)}
+.wait.back .meter{background:rgba(255,255,255,.25)}.wait.back .meter i{background:#fff}
+
+/* numbers */
+.numbers{padding:8px 0 64px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:36px}
+h2{font-weight:800;font-size:26px;letter-spacing:-.015em;line-height:1.15}
+.side p{margin-top:12px;font-family:var(--serif);font-size:17px;color:var(--ink-2);max-width:42ch}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px var(--rule)}
+th,td{text-align:left;padding:13px 18px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:13px;font-weight:600;color:var(--ink-3)}
+td{font-size:16px}
+td.q{font-family:var(--serif);font-style:italic;color:var(--ink-2);width:40%}
+td.n{font-weight:800;font-size:20px;white-space:nowrap}
+td.n small{display:block;font-weight:400;font-size:13px;color:var(--ink-3);white-space:normal}
+tr:last-child td{border-bottom:0}
+.foot{margin-top:14px;font-size:14px;color:var(--ink-3);max-width:70ch}
+.chain{margin-top:26px;padding:18px 20px;border-left:4px solid var(--ink-3);background:rgba(255,255,255,.55);font-family:var(--serif);font-size:17px;color:var(--ink-2)}
+.chain b{font-family:var(--sans);color:var(--ink)}
+
+/* notes */
+.notes{padding:8px 0 64px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:36px}
+.slips{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+details.slip{background:#FBFBF8;border-radius:4px;box-shadow:0 0 0 1px var(--rule),0 10px 24px -20px rgba(24,34,46,.6)}
+details.slip summary{list-style:none;cursor:pointer;padding:16px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+details.slip summary::-webkit-details-marker{display:none}
+.slip .fl{font-weight:900;font-size:24px;grid-row:span 2}
+.slip .k{font-size:14px;color:var(--ink-2)}
+.slip .k b{color:var(--landed)}
+.slip .k b.est{color:#9A6B00}
+.slip .open{font-size:13px;color:var(--claude);text-decoration:underline;text-underline-offset:3px}
+.slip[open] .open{display:none}
+.slip pre{margin:0 18px 18px;padding-top:14px;border-top:1px dashed var(--rule);font:14px/1.55 var(--serif);white-space:pre-wrap;color:var(--ink)}
+.flip{margin-top:20px;font-family:var(--serif);font-size:17px;color:var(--ink-2);max-width:62ch}
+
+/* repo */
+.repo{padding:8px 0 56px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:36px}
+.repo .go{display:inline-block;margin-top:18px;padding:13px 20px;border-radius:30px;background:var(--ink);color:#fff;text-decoration:none;font-weight:700;font-size:16px}
+.proofs{display:grid;gap:0;background:var(--sheet);border-radius:16px;box-shadow:0 0 0 1px var(--rule)}
+.proof{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:16px 20px;border-bottom:1px solid var(--rule)}
+.proof:last-child{border-bottom:0}
+.proof h3{font-size:16px;font-weight:800;line-height:1.3}
+.proof p{font-family:var(--serif);font-size:16.5px;color:var(--ink-2)}
+.proof code{font-family:var(--sans);font-size:14px;background:var(--apron);padding:1px 6px;border-radius:4px;color:var(--ink)}
+
+footer{border-top:1px solid var(--rule);padding:30px 0 48px}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:baseline}
+footer p{font-size:15px;color:var(--ink-2)}
+footer a.cal{font-weight:800;color:var(--ink);font-size:17px}
+
+@media (max-width:940px){
+  .wrap{padding:0 16px}
+  .top{grid-template-columns:1fr;padding:34px 0 22px}
+  .stamp{justify-self:start;text-align:left}
+  .stage,.numbers,.notes,.repo{grid-template-columns:1fr;gap:22px}
+  .film{position:static;justify-self:center}
+  .film video{width:min(330px,82vw)}
+  .board-head{display:none}
+  .row{grid-template-columns:46px 1fr;gap:4px 12px;padding:12px 14px}
+  .row .who{grid-column:2;padding:0;font-size:13px}
+  .row .said{grid-column:2;font-size:17px}
+  .row .t{grid-row:span 2;font-size:15px}
+  .wait{grid-template-columns:1fr auto;padding:12px 14px}
+  .wait .t{display:none}
+  .slips{grid-template-columns:1fr}
+  .lede{font-size:17px}
+  .asked{font-size:34px}
+  thead{display:none}
+  table,tbody{display:block}
+  tr{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rule)}
+  tr:last-child{border-bottom:0}
+  td{border-bottom:0}
+  td.q{grid-column:1/-1;padding-bottom:0}
+  .proof{grid-template-columns:1fr;gap:4px}
+  th,td{padding:11px 12px}
+  td.q{width:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 class="asked"><q>Which Amsterdam arrivals still need checking?</q></h1>
+      <p class="lede">A one-minute call to a voice agent running on Ubuntu with LiveKit. It reads a read-only API, hands two flights to a Claude skill, answers another question while Claude works, then gives the result without being asked again.</p>
+    </div>
+    <p class="stamp"><b>Recorded LiveKit call&nbsp;·&nbsp;Fictional flight data</b>Snapshot of six overnight arrivals at 07:00<br>Caller voice pre-recorded, agent live</p>
+  </header>
+
+  <section class="stage" aria-label="The recorded call">
+    <div class="film">
+      <video id="v" src="call.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video>
+      <p>The call page at phone width, filmed as it ran. Nothing cut: the pauses are the real ones.</p>
+    </div>
+    <div class="board" role="list" aria-label="Transcript, in sync with the film">
+      <div class="board-head" aria-hidden="true"><span>Time</span><span>Who</span><span>What was said</span></div>
+      <div class="rows" id="rows"></div>
+    </div>
+  </section>
+
+  <section class="numbers" aria-labelledby="h-num">
+    <div class="side">
+      <h2 id="h-num">How long the caller waited</h2>
+      <p>Measured on this call, from the moment the caller stopped speaking to the first agent sound in the caller's browser.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Caller</th><th>First words back</th><th>Useful answer</th></tr></thead>
+        <tbody id="turns"></tbody>
+      </table>
+      <p class="foot" id="foot"></p>
+      <p class="chain" id="chain"></p>
+    </div>
+  </section>
+
+  <section class="notes" aria-labelledby="h-notes">
+    <div class="side">
+      <h2 id="h-notes">What Claude read</h2>
+      <p>The skill gets the two flight numbers and the night's inbox of nine carrier notes. For each flight it must find the latest note and tell a confirmed arrival from an estimate.</p>
+    </div>
+    <div>
+      <div class="slips">
+        <details class="slip">
+          <summary><span class="fl">5188</span><span class="k">ICN to AMS, note N-0631 at 06:31</span><span class="k"><b>Confirmed arrival 06:12</b> <span class="open">Open the note</span></span></summary>
+          <pre>__NOTE_5188__</pre>
+        </details>
+        <details class="slip">
+          <summary><span class="fl">7745</span><span class="k">DXB to AMS, note N-0547 at 05:47</span><span class="k"><b class="est">Estimate only, 07:40</b> <span class="open">Open the note</span></span></summary>
+          <pre>__NOTE_7745__</pre>
+        </details>
+      </div>
+      <p class="flip">Claude picks the note and the finding; the code then checks that the note is that flight's latest, that it contains the time, and writes the sentence the agent speaks. Swap the 06:12 confirmation onto 7745 and run the same skill: the answer flips, and 5188 becomes the one to follow up.</p>
+    </div>
+  </section>
+
+  <section class="repo" aria-labelledby="h-repo">
+    <div class="side">
+      <h2 id="h-repo">Everything else is in the repository</h2>
+      <p>One command starts it on a laptop; one script installs it on Ubuntu as systemd services.</p>
+      <a class="go" href="https://github.com/fred1433/livekit-morning-brief">Open the repository</a>
+    </div>
+    <div class="proofs">
+      <div class="proof"><h3>Survives a reboot</h3><p>The call above ran after <code>sudo systemctl reboot</code> on an Ubuntu 24.04 VM: new boot id, the agent service back up five seconds after boot, nobody logged in to start it.</p></div>
+      <div class="proof"><h3>Reads, never writes</h3><p>Asked <q>Mark fifty-one eighty-eight as arrived at six twelve</q>, the agent answered <q>I can only read. Someone on the team needs to record that arrival in the ops system.</q> The API exposes GET only and logged no write request.</p></div>
+      <div class="proof"><h3>Webhook contract</h3><p>202 with a request id, then the agent long-polls for the result, so the Ubuntu server opens no inbound port. Duplicate, deadline passed and caller hung up are each replayed in <code>tests/test_contract.py</code>.</p></div>
+      <div class="proof"><h3>Small knowledge base</h3><p>Markdown files in <code>knowledge/</code>, loaded into the agent at the start of each call. The estimate rule in the film comes from there.</p></div>
+      <div class="proof"><h3>Change it</h3><p>Prompt in <code>agent/prompt.md</code>, voice and models in the environment file, tools in <code>agent/agent.py</code>. Then <code>sudo systemctl restart morning-brief-agent</code>.</p></div>
+    </div>
+  </section>
+</div>
+</main>
+<footer>
+  <div class="wrap">
+    <p>Built by Frederic de Lavenne de Choulot, The AI Pipe. All flights, times and notes are invented for this demo.</p>
+    <a class="cal" href="https://cal.theaipipe.com">Book 15 minutes to talk it through</a>
+  </div>
+</footer>
+<script>
+const CALL = __CALL_JSON__;
+const v = document.getElementById('v'), rowsEl = document.getElementById('rows');
+const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return m + ':' + (r < 10 ? '0' : '') + r.toFixed(1); };
+const w = CALL.webhook;
+const items = [];
+CALL.rows.forEach(r => items.push({kind: 'row', at: r.start, r}));
+items.push({kind: 'wait', at: w.sent - 0.001});
+items.sort((a, b) => a.at - b.at);
+const resultRow = CALL.rows.find(r => r.who === 'agent' && r.start > w.returned && /six twelve|06:12/.test(r.text));
+let html = '';
+for (const it of items) {
+  if (it.kind === 'wait') {
+    html += `<div class="wait" id="wait" role="listitem"><span class="t">${fmt(w.sent)}</span>`+
+            `<span class="what" id="waitWhat">Claude is reading the carrier notes<span>Webhook sent, request ${w.request_id}. The call goes on.</span></span>`+
+            `<span class="clock" id="waitClock">${w.seconds.toFixed(1)} s</span><span class="meter"><i id="meter"></i></span></div>`;
+    continue;
+  }
+  const r = it.r, inwait = r.start > w.sent && r.start < w.returned, isRes = r === resultRow;
+  let gap = '';
+  if (isRes) gap = `<span class="gap">Claude's result came back at ${fmt(w.returned)}; spoken ${w.result_audible_after_agent_finished_s.toFixed(1)} s after the agent finished its previous answer</span>`;
+  html += `<div class="row ${r.who}${inwait ? ' inwait' : ''}${isRes ? ' result' : ''}" role="listitem" tabindex="0" data-s="${r.start}" data-e="${r.end}">`+
+          `<span class="t">${fmt(r.start).replace(/\.\d$/, '')}</span><span class="who">${r.who === 'agent' ? 'Agent' : 'Caller'}</span>`+
+          `<span class="said">${r.text.replace(/</g, '&lt;')}${gap}</span></div>`;
+}
+rowsEl.innerHTML = html;
+const rowEls = [...rowsEl.querySelectorAll('.row')];
+rowEls.forEach(el => {
+  const go = () => { v.currentTime = +el.dataset.s; v.play(); };
+  el.addEventListener('click', go);
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+});
+const wait = document.getElementById('wait'), meter = document.getElementById('meter'), clock = document.getElementById('waitClock'), what = document.getElementById('waitWhat');
+function tick() {
+  const t = v.currentTime;
+  rowEls.forEach(el => el.classList.toggle('now', t >= +el.dataset.s && t < +el.dataset.e + 0.6));
+  const p = Math.min(1, Math.max(0, (t - w.sent) / (w.returned - w.sent)));
+  meter.style.width = (p * 100) + '%';
+  const back = t >= w.returned;
+  wait.classList.toggle('back', back);
+  if (t > w.sent && !back) clock.textContent = (t - w.sent).toFixed(1) + ' s';
+  else clock.textContent = w.seconds.toFixed(1) + ' s';
+  what.firstChild.textContent = back ? 'Result back from Claude' : 'Claude is reading the carrier notes';
+  if (!v.paused) requestAnimationFrame(tick);
+}
+v.addEventListener('play', () => requestAnimationFrame(tick));
+v.addEventListener('seeked', tick);
+v.addEventListener('pause', tick);
+tick();
+
+const T = CALL.turns, s1 = x => x.toFixed(1) + ' s';
+const said = re => (CALL.rows.find(r => r.who === 'agent' && re.test(r.text)) || {}).text || '';
+document.getElementById('turns').innerHTML = [
+  `<tr><td class="q">${T[0].caller}</td><td class="n">${s1(T[0].first_audible_s)}<small>“${said(/check\.?$/i)}”</small></td><td class="n">${s1(T[0].answer_audible_s)}<small>the two flights</small></td></tr>`,
+  `<tr><td class="q">${T[1].caller}</td><td class="n">${s1(T[1].first_audible_s)}<small>“Checking.” The webhook left ${s1(w.sent - T[1].end_of_speech)} after the caller stopped</small></td><td class="n">${s1(w.seconds)}<small>Claude's skill, from webhook sent to result back</small></td></tr>`,
+  `<tr><td class="q">${T[2].caller}</td><td class="n">${s1(T[2].first_audible_s)}<small>the answer itself, while Claude was still working</small></td><td class="n">${s1(T[2].first_audible_s)}</td></tr>`,
+  `<tr><td class="q">Claude's result, back during that answer</td><td class="n">${s1(w.result_audible_after_agent_finished_s)}<small>after the agent finished its answer (${s1(w.result_audible_after_return_s)} after the result came back)</small></td><td class="n">unprompted</td></tr>`
+].join('');
+document.getElementById('foot').textContent = 'One recorded call, three caller turns, one webhook request. The caller lines are pre-recorded clips; their end is the end of speech, trailing silence removed. Webhook times come from the webhook log, the rest from the browser. Brain: OpenAI gpt-live-1 through LiveKit Agents 1.8, tools delegated to gpt-5.6-luna; Claude: claude -p with one read-only skill.';
+document.getElementById('chain').innerHTML = '<b>The same three questions on a speech-to-text, LLM, text-to-speech chain</b> (LiveKit Inference: Deepgram Flux, Gemma 4 31B, Cartesia Sonic 3.5, default settings, one call): __CHAIN_FIRST__ s before the first answer, and __CHAIN_SILENCE__ s of silence after the caller asked for the carrier notes, because the chain says nothing while a tool runs. That is why the repository defaults to gpt-live-1, with the chain one setting away.';
+</script>
+</body>
+</html>

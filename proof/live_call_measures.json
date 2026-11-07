@@ -1,0 +1,102 @@
+{
+ "video_duration_s": 60.05,
+ "rows": [
+  {
+   "who": "agent",
+   "start": 7.93,
+   "end": 10.21,
+   "text": "The 07:00 arrivals snapshot is loaded."
+  },
+  {
+   "who": "caller",
+   "start": 12.4,
+   "end": 16.29,
+   "text": "Morning. Which Amsterdam arrivals still need checking?"
+  },
+  {
+   "who": "agent",
+   "start": 18.65,
+   "end": 19.63,
+   "text": "Okay. I'll check."
+  },
+  {
+   "who": "agent",
+   "start": 22.63,
+   "end": 27.87,
+   "text": "Two of six still need checking. Flights fifty-one eighty-eight and seventy-seven forty-five."
+  },
+  {
+   "who": "caller",
+   "start": 29.21,
+   "end": 32.0,
+   "text": "Can you check the carrier notes for those two?"
+  },
+  {
+   "who": "agent",
+   "start": 34.49,
+   "end": 34.91,
+   "text": "Checking."
+  },
+  {
+   "who": "caller",
+   "start": 37.0,
+   "end": 38.93,
+   "text": "Does an estimate count?"
+  },
+  {
+   "who": "agent",
+   "start": 41.19,
+   "end": 46.15,
+   "text": "No. Only a confirmed arrival counts. An estimate, no matter how recent, does not."
+  },
+  {
+   "who": "agent",
+   "start": 48.87,
+   "end": 57.77,
+   "text": "Fifty-one eighty-eight landed at six twelve. The carrier confirmed it. Seventy-seven forty-five only has an estimate, seven forty. That's the one to follow up."
+  }
+ ],
+ "turns": [
+  {
+   "caller": "Morning. Which Amsterdam arrivals still need checking?",
+   "end_of_speech": 16.29,
+   "first_audible_s": 2.36,
+   "answer_audible_s": 6.34
+  },
+  {
+   "caller": "Can you check the carrier notes for those two?",
+   "end_of_speech": 32.0,
+   "first_audible_s": 2.49
+  },
+  {
+   "caller": "Does an estimate count?",
+   "end_of_speech": 38.93,
+   "first_audible_s": 2.26
+  }
+ ],
+ "webhook": {
+  "request_id": "req_7cffff0948",
+  "sent": 34.37,
+  "returned": 44.84,
+  "seconds": 10.47,
+  "result": {
+   "flights": [
+    {
+     "flight": 5188,
+     "finding": "confirmed_arrival",
+     "time": "06:12",
+     "note_id": "N-0631"
+    },
+    {
+     "flight": 7745,
+     "finding": "estimate_only",
+     "time": "07:40",
+     "note_id": "N-0547"
+    }
+   ]
+  },
+  "result_audible_after_return_s": 4.03,
+  "agent_was_speaking_until": 46.15,
+  "result_audible_after_agent_finished_s": 2.72
+ }
+}

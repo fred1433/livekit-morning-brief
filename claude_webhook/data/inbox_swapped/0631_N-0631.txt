@@ -1,0 +1,9 @@
+FICTIONAL CARRIER NOTE (demo data, invented; swapped set for the inversion test)
+note_id: N-0631
+flight: 7745  DXB -> AMS
+received: 2026-11-09 06:31 (Amsterdam)
+from: handling desk
+
+Morning team, update on 7745. Aircraft on block AMS 06:12 local, ATA 06:12
+confirmed by ramp. 3 ULDs offloaded, breakdown starting at the handler.
+Arrival time not yet pushed to the system on our side, sorry for that.

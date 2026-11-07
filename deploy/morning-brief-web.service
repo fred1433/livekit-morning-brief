@@ -1,0 +1,13 @@
+[Unit]
+Description=Morning brief call page and LiveKit token endpoint
+After=network.target
+
+[Service]
+User=morningbrief
+WorkingDirectory=/opt/morning-brief
+EnvironmentFile=/etc/morning-brief/env
+ExecStart=/opt/morning-brief/.venv/bin/python web/server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+# Ubuntu 24.04 VM (Lima, on the builder's Mac). Agent installed with deploy/install-ubuntu.sh
+## before reboot  2026-11-07T22:57:19Z
+Ubuntu 24.04.4 LTS
+boot_id=4c560cba-d61c-4eae-8e97-a67de7344195
+up since 2026-11-07 19:25:26
+enabled
+active
+## sudo systemctl reboot sent  2026-11-07T22:57:20Z
+## after reboot, nobody logged in to start anything  2026-11-07T22:57:53Z
+boot_id=a329cd34-6d7a-4a74-974a-600a439f7d9c
+up since 2026-11-07 19:57:24
+active
+active
+active
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-11-07 19:57:29 -03
+"message": "registered worker", "level": "INFO", "name": "livekit.agents", "agent_name": "morning-brief", "deployment": "", "id": "AW_MShwZJ6ULrUH", "region": "US Central A"

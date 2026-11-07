@@ -1,0 +1,7 @@
+FICTIONAL CARRIER NOTE (demo data, invented; swapped set for the inversion test)
+note_id: N-0347
+flight: 6602  SZX -> AMS
+received: 2026-11-09 03:47 (Amsterdam)
+from: carrier ops
+
+6602 revised ETA 04:00 local, slot delay at origin.

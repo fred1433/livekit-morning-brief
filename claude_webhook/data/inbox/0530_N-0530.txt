@@ -1,0 +1,7 @@
+FICTIONAL CARRIER NOTE (demo data, invented)
+note_id: N-0530
+flight: 3391  CAN -> AMS
+received: 2026-11-09 05:30 (Amsterdam)
+from: handling desk
+
+3391 landed 05:27, 1 ULD, paperwork with the handler.

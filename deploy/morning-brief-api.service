@@ -1,0 +1,13 @@
+[Unit]
+Description=Fictional read-only internal API for the morning brief demo (stands in for your API)
+After=network.target
+
+[Service]
+User=morningbrief
+WorkingDirectory=/opt/morning-brief
+EnvironmentFile=/etc/morning-brief/env
+ExecStart=/opt/morning-brief/.venv/bin/python mock_api/server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

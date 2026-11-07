@@ -1,0 +1,90 @@
+{
+ "video_duration_s": 116.49,
+ "rows": [
+  {
+   "who": "agent",
+   "start": 9.15,
+   "end": 12.13,
+   "text": "Good morning. The zero seven hundred arrivals snapshot is loaded."
+  },
+  {
+   "who": "caller",
+   "start": 14.31,
+   "end": 18.2,
+   "text": "Morning. Which Amsterdam arrivals still need checking?"
+  },
+  {
+   "who": "agent",
+   "start": 27.17,
+   "end": 30.45,
+   "text": "Two of six. Fifty-one eighty-eight and seventy-seven forty-five."
+  },
+  {
+   "who": "caller",
+   "start": 31.88,
+   "end": 34.66,
+   "text": "Can you check the carrier notes for those two?"
+  },
+  {
+   "who": "agent",
+   "start": 52.05,
+   "end": 60.61,
+   "text": "Fifty-one eighty-eight landed at zero six twelve, the carrier confirmed it. Seventy-seven forty-five only has an estimate, zero seven forty. That's the one to follow up."
+  },
+  {
+   "who": "caller",
+   "start": 62.73,
+   "end": 64.66,
+   "text": "Does an estimate count?"
+  },
+  {
+   "who": "agent",
+   "start": 71.87,
+   "end": 60.61,
+   "text": "No. An estimate never counts as an arrival."
+  }
+ ],
+ "turns": [
+  {
+   "caller": "Morning. Which Amsterdam arrivals still need checking?",
+   "end_of_speech": 18.2,
+   "first_audible_s": 8.98,
+   "answer_audible_s": 8.97
+  },
+  {
+   "caller": "Can you check the carrier notes for those two?",
+   "end_of_speech": 34.66,
+   "first_audible_s": 17.39
+  },
+  {
+   "caller": "Does an estimate count?",
+   "end_of_speech": 64.66,
+   "first_audible_s": 7.21
+  }
+ ],
+ "webhook": {
+  "request_id": "req_f1f4d813ea",
+  "sent": 37.74,
+  "returned": 50.77,
+  "seconds": 13.02,
+  "result": {
+   "flights": [
+    {
+     "flight": 5188,
+     "finding": "confirmed_arrival",
+     "time": "06:12",
+     "note_id": "N-0631"
+    },
+    {
+     "flight": 7745,
+     "finding": "estimate_only",
+     "time": "07:40",
+     "note_id": "N-0547"
+    }
+   ]
+  },
+  "result_audible_after_return_s": 1.29,
+  "agent_was_speaking_until": null,
+  "result_audible_after_agent_finished_s": null
+ }
+}

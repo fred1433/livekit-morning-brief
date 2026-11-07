@@ -1,0 +1,8 @@
+FICTIONAL CARRIER NOTE (demo data, invented; swapped set for the inversion test)
+note_id: N-0436
+flight: 7745  DXB -> AMS
+received: 2026-11-09 04:36 (Amsterdam)
+from: carrier ops
+
+7745 departed DXB late due to crew rest. Original arrival 05:55.
+Revised ETA AMS 05:58 local.

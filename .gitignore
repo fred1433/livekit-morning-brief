@@ -1,0 +1,7 @@
+.venv/
+.env.local
+logs/
+*.jsonl
+__pycache__/
+node_modules/
+.wrangler/

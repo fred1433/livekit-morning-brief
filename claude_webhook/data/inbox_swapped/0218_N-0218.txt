@@ -1,0 +1,7 @@
+FICTIONAL CARRIER NOTE (demo data, invented; swapped set for the inversion test)
+note_id: N-0218
+flight: 2210  PVG -> AMS
+received: 2026-11-09 02:18 (Amsterdam)
+from: carrier ops
+
+2210 running early, ETA AMS 02:45 local.

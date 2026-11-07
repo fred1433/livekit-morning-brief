@@ -1,0 +1,8 @@
+FICTIONAL CARRIER NOTE (demo data, invented)
+note_id: N-0412
+flight: 5188  ICN -> AMS
+received: 2026-11-09 04:12 (Amsterdam)
+from: carrier ops
+
+5188 departed ICN late after a cargo door issue. Revised ETA AMS 05:58 local.
+Will confirm on-block time once landed.
