@@ -225,7 +225,7 @@ We will confirm on-block time once landed. No arrival confirmation at this stage
       <a class="go" href="https://github.com/fred1433/livekit-morning-brief">Open the repository</a>
     </div>
     <div class="proofs">
-      <div class="proof"><h3>Survives a reboot</h3><p>The call above ran after <code>sudo systemctl reboot</code> on an Ubuntu 24.04 VM: new boot id, the agent service back up five seconds after boot, nobody logged in to start it.</p></div>
+      <div class="proof"><h3>Survives a reboot</h3><p>The call above ran after <code>sudo systemctl reboot</code> on an Ubuntu 24.04 VM: new boot id, then systemd started the agent and it registered with LiveKit Cloud on its own, with nobody logged in.</p></div>
       <div class="proof"><h3>Reads, never writes</h3><p>Asked <q>Mark fifty-one eighty-eight as arrived at six twelve</q>, the agent answered <q>I can only read. Someone on the team needs to record that arrival in the ops system.</q> The API exposes GET only and logged no write request.</p></div>
       <div class="proof"><h3>Webhook contract</h3><p>202 with a request id, then the agent long-polls for the result, so the Ubuntu server opens no inbound port. Duplicate, deadline passed and caller hung up are each replayed in <code>tests/test_contract.py</code>.</p></div>
       <div class="proof"><h3>Small knowledge base</h3><p>Markdown files in <code>knowledge/</code>, loaded into the agent at the start of each call. The estimate rule in the film comes from there.</p></div>

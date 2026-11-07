@@ -50,8 +50,8 @@ sudo systemctl restart morning-brief-agent
 
 The agent only opens outbound connections (to LiveKit Cloud, OpenAI, your API and the Claude
 webhook). `proof/ubuntu_reboot.txt` is the reboot check on an Ubuntu 24.04 VM: boot id before and
-after `sudo systemctl reboot`, the agent active five seconds after boot without anyone logging
-in. The recorded call on the demo page was made right after that reboot. For phones, put the
+after `sudo systemctl reboot`, the agent started by systemd and registered with LiveKit Cloud
+without anyone logging in. The recorded call on the demo page was made right after that reboot. For phones, put the
 call page behind your reverse proxy with HTTPS (browsers only give the microphone to HTTPS pages).
 
 ## The Claude webhook contract
@@ -94,9 +94,9 @@ caller's speech to the first agent sound in the caller's browser (`proof/*_measu
 
 The chain can be tuned (preemptive generation, LiveKit async tools that report progress), and is
 one setting away: `PIPELINE=chain`. gpt-live-1 is billed by OpenAI per session minute plus the
-backend model's tokens. Building and filming this demo used about 19 minutes of gpt-live-1 calls.
+backend model's tokens. Building and filming this demo used about 25 minutes of gpt-live-1 calls.
 
-`gpt-live-1` is not deterministic: in 3 of the 11 calls filmed while building this, it did not
+`gpt-live-1` is not deterministic: in 5 of the 14 calls filmed while building this, it did not
 start the Claude check on the first ask. The film on the demo page is one call, shown uncut.
 
 ## Tests
