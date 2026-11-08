@@ -16,7 +16,7 @@
   {
    "who": "agent",
    "start": 27.17,
-   "end": 30.45,
+   "end": 30.69,
    "text": "Two of six. Fifty-one eighty-eight and seventy-seven forty-five."
   },
   {
@@ -40,7 +40,7 @@
   {
    "who": "agent",
    "start": 71.87,
-   "end": 60.61,
+   "end": 74.46,
    "text": "No. An estimate never counts as an arrival."
   }
  ],
@@ -85,6 +85,10 @@
   },
   "result_audible_after_return_s": 1.29,
   "agent_was_speaking_until": null,
-  "result_audible_after_agent_finished_s": null
- }
+  "result_audible_after_agent_finished_s": null,
+  "caller_wait_s": 17.39,
+  "result_spoken_at": 52.05
+ },
+ "board_shown_at": 25.59,
+ "carrier_check_asked_at": 31.88
 }

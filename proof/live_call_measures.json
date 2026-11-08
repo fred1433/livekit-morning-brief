@@ -1,84 +1,84 @@
 {
- "video_duration_s": 60.05,
+ "video_duration_s": 63.77,
  "rows": [
   {
    "who": "agent",
-   "start": 7.93,
-   "end": 10.21,
-   "text": "The 07:00 arrivals snapshot is loaded."
+   "start": 9.56,
+   "end": 11.54,
+   "text": "Ready for the zero seven hundred arrivals brief."
   },
   {
    "who": "caller",
-   "start": 12.4,
-   "end": 16.29,
+   "start": 13.72,
+   "end": 17.26,
    "text": "Morning. Which Amsterdam arrivals still need checking?"
   },
   {
    "who": "agent",
-   "start": 18.65,
-   "end": 19.63,
-   "text": "Okay. I'll check."
+   "start": 19.88,
+   "end": 20.28,
+   "text": "Pulling them up."
   },
   {
    "who": "agent",
-   "start": 22.63,
-   "end": 27.87,
-   "text": "Two of six still need checking. Flights fifty-one eighty-eight and seventy-seven forty-five."
+   "start": 23.32,
+   "end": 27.34,
+   "text": "Two of six: fifty-one eighty-eight and seventy-seven forty-five."
   },
   {
    "who": "caller",
-   "start": 29.21,
-   "end": 32.0,
+   "start": 28.56,
+   "end": 31.34,
    "text": "Can you check the carrier notes for those two?"
   },
   {
    "who": "agent",
-   "start": 34.49,
-   "end": 34.91,
-   "text": "Checking."
+   "start": 34.32,
+   "end": 35.54,
+   "text": "Checking the carrier notes now."
   },
   {
    "who": "caller",
-   "start": 37.0,
-   "end": 38.93,
+   "start": 37.6,
+   "end": 39.53,
    "text": "Does an estimate count?"
   },
   {
    "who": "agent",
-   "start": 41.19,
-   "end": 46.15,
-   "text": "No. Only a confirmed arrival counts. An estimate, no matter how recent, does not."
+   "start": 42.14,
+   "end": 45.52,
+   "text": "No. Only a confirmed arrival counts, not an estimate."
   },
   {
    "who": "agent",
-   "start": 48.87,
-   "end": 57.77,
-   "text": "Fifty-one eighty-eight landed at six twelve. The carrier confirmed it. Seventy-seven forty-five only has an estimate, seven forty. That's the one to follow up."
+   "start": 50.04,
+   "end": 61.3,
+   "text": "Fifty-one eighty-eight is confirmed, arrived at six twelve. Seventy-seven forty-five still only has an estimate, seven forty. That\u2019s the one to follow up."
   }
  ],
  "turns": [
   {
    "caller": "Morning. Which Amsterdam arrivals still need checking?",
-   "end_of_speech": 16.29,
-   "first_audible_s": 2.36,
-   "answer_audible_s": 6.34
+   "end_of_speech": 17.26,
+   "first_audible_s": 2.62,
+   "answer_audible_s": 6.06
   },
   {
    "caller": "Can you check the carrier notes for those two?",
-   "end_of_speech": 32.0,
-   "first_audible_s": 2.49
+   "end_of_speech": 31.34,
+   "first_audible_s": 2.98
   },
   {
    "caller": "Does an estimate count?",
-   "end_of_speech": 38.93,
-   "first_audible_s": 2.26
+   "end_of_speech": 39.53,
+   "first_audible_s": 2.61
   }
  ],
  "webhook": {
-  "request_id": "req_7cffff0948",
-  "sent": 34.37,
-  "returned": 44.84,
-  "seconds": 10.47,
+  "request_id": "req_2fb0a97c61",
+  "sent": 34.28,
+  "returned": 46.96,
+  "seconds": 12.68,
   "result": {
    "flights": [
     {
@@ -95,8 +95,12 @@
     }
    ]
   },
-  "result_audible_after_return_s": 4.03,
-  "agent_was_speaking_until": 46.15,
-  "result_audible_after_agent_finished_s": 2.72
- }
+  "result_audible_after_return_s": 3.08,
+  "agent_was_speaking_until": null,
+  "result_audible_after_agent_finished_s": null,
+  "caller_wait_s": 18.7,
+  "result_spoken_at": 50.04
+ },
+ "board_shown_at": 19.78,
+ "carrier_check_asked_at": 28.56
 }

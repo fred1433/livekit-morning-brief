@@ -32,7 +32,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,.row:focus-visible{ou
 .lede{margin-top:18px;font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--ink-2);max-width:56ch}
 .stamp{justify-self:end;text-align:right;font-size:14px;color:var(--ink-2);line-height:1.45;padding-bottom:6px}
 .stamp b{display:block;font-size:15px;color:var(--ink);font-weight:700}
-.stamp .dot{margin:0 .2em 0 .45em}
+.dot{font-family:Georgia,serif;font-style:normal;display:inline-block;margin:0 .35em}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* the stage: film + board */
@@ -41,6 +41,12 @@ a:focus-visible,button:focus-visible,summary:focus-visible,.row:focus-visible{ou
 .film video{display:block;width:360px;height:auto;aspect-ratio:390/844;border-radius:28px;background:#dfe5ea;
   box-shadow:0 0 0 1px rgba(24,34,46,.10),0 18px 40px -18px rgba(24,34,46,.35)}
 .film p{margin-top:12px;font-size:13px;color:var(--ink-3);line-height:1.45}
+.cues{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cue{border:0;border-radius:24px;padding:9px 13px;font:700 14px var(--sans);white-space:nowrap;cursor:pointer;background:var(--ink);color:#fff}
+.cue.alt{background:var(--taxi);color:var(--taxi-ink)}
+.cue span{font-weight:400;opacity:.85}
+.reliab{margin-top:10px;font-size:14px;color:var(--ink-2);max-width:70ch}
+.proof code,.side code{white-space:nowrap}
 
 .board{background:var(--sheet);border-radius:16px;box-shadow:0 0 0 1px var(--rule);overflow:hidden}
 .board-head{display:grid;grid-template-columns:64px 92px 1fr;gap:16px;padding:12px 22px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--ink-3)}
@@ -139,6 +145,7 @@ footer a.cal{font-weight:800;color:var(--ink);font-size:17px}
   tr:last-child{border-bottom:0}
   td{border-bottom:0}
   td.q{grid-column:1/-1;padding-bottom:0}
+  td.n[data-label]::before{content:attr(data-label);display:block;font-weight:600;font-size:12px;color:var(--ink-3);margin-bottom:2px}
   .proof{grid-template-columns:1fr;gap:4px}
   th,td{padding:11px 12px}
   td.q{width:auto}
@@ -154,32 +161,21 @@ footer a.cal{font-weight:800;color:var(--ink);font-size:17px}
       <h1 class="asked"><q>Which Amsterdam arrivals still need checking?</q></h1>
       <p class="lede">A one-minute call to a voice agent running on Ubuntu with LiveKit. It reads a read-only API, hands two flights to a Claude skill, answers another question while Claude works, then gives the result without being asked again.</p>
     </div>
-    <p class="stamp"><b>Recorded LiveKit call<span class="dot" aria-hidden="true">·</span><span class="sr">,</span> Fictional flight data</b>Snapshot of six overnight arrivals at 07:00<br>Caller voice pre-recorded, agent live</p>
+    <p class="stamp"><b>Recorded LiveKit call<span class="dot" aria-hidden="true">·</span><span class="sr">, </span>Fictional flight data</b>Snapshot of six overnight arrivals at 07:00<br>Caller voice pre-recorded, agent live</p>
   </header>
 
   <section class="stage" aria-label="The recorded call">
     <div class="film">
+      <div class="cues">
+        <button class="cue" id="playAll">Play full call<span><i class="dot">·</i>1:04</span></button>
+        <button class="cue alt" id="jump">Jump to the carrier check<span><i class="dot">·</i>0:28</span></button>
+      </div>
       <video id="v" src="call.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video>
-      <p>The call page at phone width, filmed as it ran. Nothing cut: the pauses are the real ones.</p>
+      <p>The call page at phone width, filmed as it ran. Nothing cut: the pauses are the real ones. The caller's lines are shown as scripted.</p>
     </div>
     <div class="board" role="list" aria-label="Transcript, in sync with the film">
       <div class="board-head" aria-hidden="true"><span>Time</span><span>Who</span><span>What was said</span></div>
       <div class="rows" id="rows"></div>
-    </div>
-  </section>
-
-  <section class="numbers" aria-labelledby="h-num">
-    <div class="side">
-      <h2 id="h-num">How long the caller waited</h2>
-      <p>Measured on this call, from the moment the caller stopped speaking to the first agent sound in the caller's browser.</p>
-    </div>
-    <div>
-      <table>
-        <thead><tr><th>Caller</th><th>First words back</th><th>Useful answer</th></tr></thead>
-        <tbody id="turns"></tbody>
-      </table>
-      <p class="foot" id="foot"></p>
-      <p class="chain" id="chain"></p>
     </div>
   </section>
 
@@ -191,7 +187,7 @@ footer a.cal{font-weight:800;color:var(--ink);font-size:17px}
     <div>
       <div class="slips">
         <details class="slip">
-          <summary><span class="fl">5188</span><span class="k">ICN to AMS, note N-0631 at 06:31</span><span class="k"><b>Confirmed arrival 06:12</b> <span class="open">Open the note</span></span></summary>
+          <summary><span class="fl">5188</span><span class="k">ICN to AMS, note N-0631 at 06:31</span><span class="k"><b>Arrival confirmed, 06:12</b> <span class="open">Open the note</span></span></summary>
           <pre>FICTIONAL CARRIER NOTE (demo data, invented)
 note_id: N-0631
 flight: 5188  ICN -&gt; AMS
@@ -214,7 +210,23 @@ Update on 7745: further delay en route. Revised ETA AMS 07:40 local.
 We will confirm on-block time once landed. No arrival confirmation at this stage.</pre>
         </details>
       </div>
-      <p class="flip">Claude picks the note and the finding; the code then checks that the note is that flight's latest, that it contains the time, and writes the sentence the agent speaks. Swap the 06:12 confirmation onto 7745 and run the same skill: the answer flips, and 5188 becomes the one to follow up.</p>
+      <p class="flip">Claude picks the note and the finding; the code then checks that the note is that flight's latest, that it contains the time without denying it, and writes the sentence the agent is told to read out. In the film the voice rephrases it slightly; the flight numbers and times are the ones the code wrote. Swap the 06:12 confirmation onto 7745 and run the same skill: the answer flips, and 5188 becomes the one to follow up.</p>
+    </div>
+  </section>
+
+  <section class="numbers" aria-labelledby="h-num">
+    <div class="side">
+      <h2 id="h-num">How long the caller waited</h2>
+      <p>Measured on this call, from the moment the caller stopped speaking to the first agent sound in the caller's browser.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Caller</th><th>First words back</th><th>Useful answer</th></tr></thead>
+        <tbody id="turns"></tbody>
+      </table>
+      <p class="foot" id="foot"></p>
+      <p class="reliab">In 6 of the 15 development calls before this one, the Claude check did not start on the first request. In this recorded call it started on the first request.</p>
+      <p class="chain" id="chain"></p>
     </div>
   </section>
 
@@ -225,11 +237,11 @@ We will confirm on-block time once landed. No arrival confirmation at this stage
       <a class="go" href="https://github.com/fred1433/livekit-morning-brief">Open the repository</a>
     </div>
     <div class="proofs">
-      <div class="proof"><h3>Survives a reboot</h3><p>The call above ran after <code>sudo systemctl reboot</code> on an Ubuntu 24.04 VM: new boot id, then systemd started the agent and it registered with LiveKit Cloud on its own, with nobody logged in.</p></div>
-      <div class="proof"><h3>Reads, never writes</h3><p>Asked <q>Mark fifty-one eighty-eight as arrived at six twelve</q>, the agent answered <q>I can only read. Someone on the team needs to record that arrival in the ops system.</q> The API exposes GET only and logged no write request.</p></div>
-      <div class="proof"><h3>Webhook contract</h3><p>202 with a request id, then the agent long-polls for the result, so the Ubuntu server opens no inbound port. Duplicate, deadline passed and caller hung up are each replayed in <code>tests/test_contract.py</code>.</p></div>
+      <div class="proof"><h3>Survives a reboot</h3><p>The call above ran after <code>sudo systemctl reboot</code> on an Ubuntu 24.04 VM: new boot id, then systemd started the agent and it registered with LiveKit Cloud on its own, with nobody logged in. The agent's journal ties the call to that boot. The Claude webhook ran on another machine, standing in for the team's Claude setup.</p></div>
+      <div class="proof"><h3>Reads, never writes</h3><p>Asked <q>Mark fifty-one eighty-eight as arrived at six twelve</q>, the agent answered <q>I can only read. Someone on the team needs to record that arrival in the ops system.</q> The API has no write route; the agent has no write tool.</p></div>
+      <div class="proof"><h3>Webhook contract</h3><p>202 with a request id, then the agent long-polls for the result, so the Ubuntu server opens no inbound port. Duplicate, deadline passed, retry, failure and caller hung up are each replayed in <code>tests/test_contract.py</code>.</p></div>
       <div class="proof"><h3>Small knowledge base</h3><p>Markdown files in <code>knowledge/</code>, loaded into the agent at the start of each call. The estimate rule in the film comes from there.</p></div>
-      <div class="proof"><h3>Change it</h3><p>Prompt in <code>agent/prompt.md</code>, voice and models in the environment file, tools in <code>agent/agent.py</code>. Then <code>sudo systemctl restart morning-brief-agent</code>.</p></div>
+      <div class="proof"><h3>Change it</h3><p>Prompt in <code>agent/prompt.md</code>, voice and models in the environment file, tools in <code>agent/agent.py</code>. Then <code>sudo systemctl restart 'morning-brief-*'</code>.</p></div>
     </div>
   </section>
 </div>
@@ -241,48 +253,52 @@ We will confirm on-block time once landed. No arrival confirmation at this stage
   </div>
 </footer>
 <script>
-const CALL = {"video_duration_s": 60.05, "rows": [{"who": "agent", "start": 7.93, "end": 10.21, "text": "The 07:00 arrivals snapshot is loaded."}, {"who": "caller", "start": 12.4, "end": 16.29, "text": "Morning. Which Amsterdam arrivals still need checking?"}, {"who": "agent", "start": 18.65, "end": 19.63, "text": "Okay. I'll check."}, {"who": "agent", "start": 22.63, "end": 27.87, "text": "Two of six still need checking. Flights fifty-one eighty-eight and seventy-seven forty-five."}, {"who": "caller", "start": 29.21, "end": 32.0, "text": "Can you check the carrier notes for those two?"}, {"who": "agent", "start": 34.49, "end": 34.91, "text": "Checking."}, {"who": "caller", "start": 37.0, "end": 38.93, "text": "Does an estimate count?"}, {"who": "agent", "start": 41.19, "end": 46.15, "text": "No. Only a confirmed arrival counts. An estimate, no matter how recent, does not."}, {"who": "agent", "start": 48.87, "end": 57.77, "text": "Fifty-one eighty-eight landed at six twelve. The carrier confirmed it. Seventy-seven forty-five only has an estimate, seven forty. That's the one to follow up."}], "turns": [{"caller": "Morning. Which Amsterdam arrivals still need checking?", "end_of_speech": 16.29, "first_audible_s": 2.36, "answer_audible_s": 6.34}, {"caller": "Can you check the carrier notes for those two?", "end_of_speech": 32.0, "first_audible_s": 2.49}, {"caller": "Does an estimate count?", "end_of_speech": 38.93, "first_audible_s": 2.26}], "webhook": {"request_id": "req_7cffff0948", "sent": 34.37, "returned": 44.84, "seconds": 10.47, "result": {"flights": [{"flight": 5188, "finding": "confirmed_arrival", "time": "06:12", "note_id": "N-0631"}, {"flight": 7745, "finding": "estimate_only", "time": "07:40", "note_id": "N-0547"}]}, "result_audible_after_return_s": 4.03, "agent_was_speaking_until": 46.15, "result_audible_after_agent_finished_s": 2.72}};
+const CALL = {"video_duration_s": 63.77, "rows": [{"who": "agent", "start": 9.56, "end": 11.54, "text": "Ready for the zero seven hundred arrivals brief."}, {"who": "caller", "start": 13.72, "end": 17.26, "text": "Morning. Which Amsterdam arrivals still need checking?"}, {"who": "agent", "start": 19.88, "end": 20.28, "text": "Pulling them up."}, {"who": "agent", "start": 23.32, "end": 27.34, "text": "Two of six: fifty-one eighty-eight and seventy-seven forty-five."}, {"who": "caller", "start": 28.56, "end": 31.34, "text": "Can you check the carrier notes for those two?"}, {"who": "agent", "start": 34.32, "end": 35.54, "text": "Checking the carrier notes now."}, {"who": "caller", "start": 37.6, "end": 39.53, "text": "Does an estimate count?"}, {"who": "agent", "start": 42.14, "end": 45.52, "text": "No. Only a confirmed arrival counts, not an estimate."}, {"who": "agent", "start": 50.04, "end": 61.3, "text": "Fifty-one eighty-eight is confirmed, arrived at six twelve. Seventy-seven forty-five still only has an estimate, seven forty. That\u2019s the one to follow up."}], "turns": [{"caller": "Morning. Which Amsterdam arrivals still need checking?", "end_of_speech": 17.26, "first_audible_s": 2.62, "answer_audible_s": 6.06}, {"caller": "Can you check the carrier notes for those two?", "end_of_speech": 31.34, "first_audible_s": 2.98}, {"caller": "Does an estimate count?", "end_of_speech": 39.53, "first_audible_s": 2.61}], "webhook": {"request_id": "req_2fb0a97c61", "sent": 34.28, "returned": 46.96, "seconds": 12.68, "result": {"flights": [{"flight": 5188, "finding": "confirmed_arrival", "time": "06:12", "note_id": "N-0631"}, {"flight": 7745, "finding": "estimate_only", "time": "07:40", "note_id": "N-0547"}]}, "result_audible_after_return_s": 3.08, "agent_was_speaking_until": null, "result_audible_after_agent_finished_s": null, "caller_wait_s": 18.7, "result_spoken_at": 50.04}, "board_shown_at": 19.78, "carrier_check_asked_at": 28.56};
+const CHAIN = {"turns": [{"caller": "Morning. Which Amsterdam arrivals still need checking?", "end_of_speech": 18.2, "first_audible_s": 8.98, "answer_audible_s": 8.97}, {"caller": "Can you check the carrier notes for those two?", "end_of_speech": 34.66, "first_audible_s": 17.39}, {"caller": "Does an estimate count?", "end_of_speech": 64.66, "first_audible_s": 7.21}], "webhook": {"seconds": 13.02}};
 const v = document.getElementById('v'), rowsEl = document.getElementById('rows');
-const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return m + ':' + (r < 10 ? '0' : '') + r.toFixed(1); };
+const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return m + ':' + (r < 9.95 ? '0' : '') + r.toFixed(1); };
+const s1 = x => x.toFixed(1) + ' s';
 const w = CALL.webhook;
-const items = [];
-CALL.rows.forEach(r => items.push({kind: 'row', at: r.start, r}));
-items.push({kind: 'wait', at: w.sent - 0.001});
+// the wait band sits after anything the agent started saying within half a second of sending the request
+const items = CALL.rows.map(r => ({kind: 'row', at: r.start, r}));
+items.push({kind: 'wait', at: w.sent + 0.5});
 items.sort((a, b) => a.at - b.at);
-const resultRow = CALL.rows.find(r => r.who === 'agent' && r.start > w.returned && /six twelve|06:12/.test(r.text));
+const resultRow = CALL.rows.find(r => r.who === 'agent' && Math.abs(r.start - w.result_spoken_at) < 0.05);
 let html = '';
 for (const it of items) {
   if (it.kind === 'wait') {
     html += `<div class="wait" id="wait" role="listitem"><span class="t">${fmt(w.sent)}</span>`+
-            `<span class="what" id="waitWhat">Claude is reading the carrier notes<span>Webhook sent, request ${w.request_id}. The call goes on.</span></span>`+
-            `<span class="clock" id="waitClock">${w.seconds.toFixed(1)} s</span><span class="meter"><i id="meter"></i></span></div>`;
+            `<span class="what"><b id="waitTitle"></b><span id="waitSub"></span></span>`+
+            `<span class="clock" id="waitClock"></span><span class="meter"><i id="meter"></i></span></div>`;
     continue;
   }
   const r = it.r, inwait = r.start > w.sent && r.start < w.returned, isRes = r === resultRow;
-  let gap = '';
-  if (isRes) gap = `<span class="gap">Claude's result came back at ${fmt(w.returned)}; spoken ${w.result_audible_after_agent_finished_s.toFixed(1)} s after the agent finished its previous answer</span>`;
+  const gap = isRes ? `<span class="gap">Claude's result came back at ${fmt(w.returned)}; read out ${s1(w.result_audible_after_return_s)} later, without being asked</span>` : '';
   html += `<div class="row ${r.who}${inwait ? ' inwait' : ''}${isRes ? ' result' : ''}" role="listitem" tabindex="0" data-s="${r.start}" data-e="${r.end}">`+
-          `<span class="t">${fmt(r.start).replace(/\.\d$/, '')}</span><span class="who">${r.who === 'agent' ? 'Agent' : 'Caller'}</span>`+
+          `<span class="t">${fmt(r.start)}</span><span class="who">${r.who === 'agent' ? 'Agent' : 'Caller'}</span>`+
           `<span class="said">${r.text.replace(/</g, '&lt;')}${gap}</span></div>`;
 }
 rowsEl.innerHTML = html;
 const rowEls = [...rowsEl.querySelectorAll('.row')];
+const seek = t => { v.currentTime = t; v.play(); };
 rowEls.forEach(el => {
-  const go = () => { v.currentTime = +el.dataset.s; v.play(); };
-  el.addEventListener('click', go);
-  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  el.addEventListener('click', () => seek(+el.dataset.s));
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(+el.dataset.s); } });
 });
-const wait = document.getElementById('wait'), meter = document.getElementById('meter'), clock = document.getElementById('waitClock'), what = document.getElementById('waitWhat');
+document.getElementById('playAll').onclick = () => seek(0);
+document.getElementById('jump').onclick = () => seek(CALL.carrier_check_asked_at);
+const wait = document.getElementById('wait'), meter = document.getElementById('meter'), clock = document.getElementById('waitClock');
+const wt = document.getElementById('waitTitle'), ws = document.getElementById('waitSub');
 function tick() {
   const t = v.currentTime;
   rowEls.forEach(el => el.classList.toggle('now', t >= +el.dataset.s && t < +el.dataset.e + 0.6));
   const p = Math.min(1, Math.max(0, (t - w.sent) / (w.returned - w.sent)));
   meter.style.width = (p * 100) + '%';
-  const back = t >= w.returned;
+  const before = t < w.sent, back = t >= w.returned;
   wait.classList.toggle('back', back);
-  if (t > w.sent && !back) clock.textContent = (t - w.sent).toFixed(1) + ' s';
-  else clock.textContent = w.seconds.toFixed(1) + ' s';
-  what.firstChild.textContent = back ? 'Result back from Claude' : 'Claude is reading the carrier notes';
+  if (before) { wt.textContent = 'Claude check'; ws.textContent = `Starts at ${fmt(w.sent)}, when the agent sends the request`; clock.textContent = s1(w.seconds); }
+  else if (!back) { wt.textContent = 'Claude is reading the carrier notes'; ws.textContent = `Webhook sent, request ${w.request_id}. The call goes on.`; clock.textContent = s1(t - w.sent); }
+  else { wt.textContent = 'Claude check done'; ws.textContent = `Request finished in ${s1(w.seconds)}; the agent reads the result out at ${fmt(w.result_spoken_at)}.`; clock.textContent = s1(w.seconds); }
   if (!v.paused) requestAnimationFrame(tick);
 }
 v.addEventListener('play', () => requestAnimationFrame(tick));
@@ -290,16 +306,16 @@ v.addEventListener('seeked', tick);
 v.addEventListener('pause', tick);
 tick();
 
-const T = CALL.turns, s1 = x => x.toFixed(1) + ' s';
-const said = re => (CALL.rows.find(r => r.who === 'agent' && re.test(r.text)) || {}).text || '';
+const T = CALL.turns;
+const first = (after) => (CALL.rows.find(r => r.who === 'agent' && r.start > after) || {}).text || '';
 document.getElementById('turns').innerHTML = [
-  `<tr><td class="q">${T[0].caller}</td><td class="n">${s1(T[0].first_audible_s)}<small>“${said(/check\.?$/i)}”</small></td><td class="n">${s1(T[0].answer_audible_s)}<small>the two flights</small></td></tr>`,
-  `<tr><td class="q">${T[1].caller}</td><td class="n">${s1(T[1].first_audible_s)}<small>“Checking.” The webhook left ${s1(w.sent - T[1].end_of_speech)} after the caller stopped</small></td><td class="n">${s1(w.seconds)}<small>Claude's skill, from webhook sent to result back</small></td></tr>`,
-  `<tr><td class="q">${T[2].caller}</td><td class="n">${s1(T[2].first_audible_s)}<small>the answer itself, while Claude was still working</small></td><td class="n">${s1(T[2].first_audible_s)}</td></tr>`,
-  `<tr><td class="q">Claude's result, back during that answer</td><td class="n">${s1(w.result_audible_after_agent_finished_s)}<small>after the agent finished its answer (${s1(w.result_audible_after_return_s)} after the result came back)</small></td><td class="n">unprompted</td></tr>`
+  `<tr><td class="q">${T[0].caller}</td><td class="n" data-label="First words back">${s1(T[0].first_audible_s)}<small>“${first(T[0].end_of_speech)}”</small></td><td class="n" data-label="Useful answer">${s1(T[0].answer_audible_s)}<small>the two flights</small></td></tr>`,
+  `<tr><td class="q">${T[1].caller}</td><td class="n" data-label="First words back">${s1(T[1].first_audible_s)}<small>“${first(T[1].end_of_speech)}”</small></td><td class="n" data-label="Useful answer">${s1(w.caller_wait_s)}<small>until the result was read out, including ${s1(w.seconds)} of Claude</small></td></tr>`,
+  `<tr><td class="q">${T[2].caller} <small>(asked while Claude worked)</small></td><td class="n" data-label="First words back">${s1(T[2].first_audible_s)}<small>the answer itself</small></td><td class="n" data-label="Useful answer">${s1(T[2].first_audible_s)}</td></tr>`
 ].join('');
 document.getElementById('foot').textContent = 'One recorded call, three caller turns, one webhook request. The caller lines are pre-recorded clips; their end is the end of speech, trailing silence removed. Webhook times come from the webhook log, the rest from the browser. Brain: OpenAI gpt-live-1 through LiveKit Agents 1.8, tools delegated to gpt-5.6-luna; Claude: claude -p with one read-only skill.';
-document.getElementById('chain').innerHTML = '<b>The same three questions on a speech-to-text, LLM, text-to-speech chain</b> (LiveKit Inference: Deepgram Flux, Gemma 4 31B, Cartesia Sonic 3.5, default settings, one call): 9.0 s before the first answer, and 17.4 s of silence after the caller asked for the carrier notes, because the chain says nothing while a tool runs. That is why the repository defaults to gpt-live-1, with the chain one setting away.';
+const CT = CHAIN.turns;
+document.getElementById('chain').innerHTML = `<b>The same questions with this repository in chain mode</b> (LiveKit Inference: Deepgram Flux, Gemma 4 31B, Cartesia Sonic 3.5; end of turn decided by the speech-to-text; the Claude tool blocks the turn), one call: ${s1(CT[0].first_audible_s)} before the first answer, and ${s1(CT[1].first_audible_s)} of silence after the caller asked for the carrier notes, ${s1(CHAIN.webhook.seconds)} of it Claude. The speech-to-text connection dropped and reconnected during that call, and the estimate question came after the result. This measures our chain setup, not chains in general: a fair comparison needs an asynchronous tool and the question asked at the same moment. That is why the repository defaults to gpt-live-1, with the chain one setting away.`;
 </script>
 </body>
 </html>

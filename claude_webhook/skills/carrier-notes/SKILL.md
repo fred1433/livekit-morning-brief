@@ -23,4 +23,5 @@ For each requested flight:
 You only read. You never write, edit or create files, and you never run commands.
 
 Answer with ONE JSON object and nothing else:
-{"flights": [{"flight": 5188, "finding": "confirmed_arrival", "time": "06:12", "note_id": "N-0631"}]}
+{"flights": [{"flight": <number>, "finding": "<confirmed_arrival|estimate_only|no_note>", "time": "<HH:MM or null>", "note_id": "<note_id or null>"}]}
+One entry per requested flight, no more.

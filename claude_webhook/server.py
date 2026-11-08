@@ -4,20 +4,24 @@ Contract (see README, "Webhook contract"):
   POST   /v1/requests            -> 202 {request_id, status: "running", deadline_s}
                                     same idempotency_key again -> 200, same request_id, no second run
   GET    /v1/requests/{id}?wait=N -> long-poll; 200 {status: running|done|failed|expired|abandoned, ...}
+                                    unknown id (for example after a webhook restart) -> 404
   DELETE /v1/requests/{id}        -> the caller hung up: the request is closed as "abandoned";
                                     if Claude finishes later, the result is logged and never spoken
-Every POST/DELETE carries X-Signature: hex HMAC-SHA256 of the raw body with WEBHOOK_SECRET.
+Every request carries X-Signature, hex HMAC-SHA256 with WEBHOOK_SECRET: of the raw body for POST
+and DELETE, of b"GET " + request_id for GET. A request that ended expired, failed or abandoned
+frees its idempotency key, so the caller can ask again in the same call.
 
 The voice agent only makes outbound calls (POST, then long-poll), so the Ubuntu server that runs
 it opens no inbound port. Claude runs as `claude -p` with the Read and Glob tools only, inside a
 throwaway copy of the skill folder: there is no path that writes to a record.
 """
-import asyncio, hashlib, hmac, json, os, re, shutil, tempfile, time, uuid
+import asyncio, json, os, re, shutil, sys, tempfile, time, uuid
 from pathlib import Path
 from aiohttp import web
 
 ROOT = Path(__file__).parent
-SECRET = os.environ.get("WEBHOOK_SECRET", "demo-webhook-secret").encode()
+sys.path.insert(0, str(ROOT.parent))
+from settings import signed  # noqa: E402  (same secret as the agent, read from the same config)
 NOTES_DIR = Path(os.environ.get("NOTES_DIR", ROOT / "data" / "inbox"))
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "claude")
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "sonnet")
@@ -37,9 +41,7 @@ def log(event: str, **kw):
         f.write(json.dumps(rec) + "\n")
 
 
-def signed(body: bytes, sig: str | None) -> bool:
-    good = hmac.new(SECRET, body, hashlib.sha256).hexdigest()
-    return bool(sig) and hmac.compare_digest(good, sig)
+NEGATION = r"\b(no|not|without|tbc|tba|pending|once|until|expected|estimated?|eta|revised)\b"
 
 
 def validate(flights: list[int], raw: str) -> dict:
@@ -60,13 +62,23 @@ def validate(flights: list[int], raw: str) -> dict:
             notes[nid.group(1)] = {"flight": f, "text": txt}
             if f not in latest or rec.group(1) > latest[f][0]:
                 latest[f] = (rec.group(1), nid.group(1))
-    out = []
-    for item in data.get("flights", []):
+    out, seen_items = [], {}
+    items = data.get("flights", []) if isinstance(data.get("flights"), list) else []
+    for item in items:
+        try:
+            seen_items.setdefault(int(item.get("flight")), []).append(item)
+        except (TypeError, ValueError, AttributeError):
+            pass
+    for item in items:
         try:
             flight = int(item.get("flight"))
         except (TypeError, ValueError):
             continue
-        if flight not in flights:
+        if flight not in flights or any(o["flight"] == flight for o in out):
+            continue
+        if len({json.dumps(x, sort_keys=True) for x in seen_items.get(flight, [])}) > 1:
+            # Claude gave two different answers for one flight: say neither
+            out.append({"flight": flight, "finding": "unverified", "time": None, "note_id": None})
             continue
         finding, t, nid = item.get("finding"), str(item.get("time") or ""), item.get("note_id")
         note = notes.get(nid)
@@ -78,8 +90,9 @@ def validate(flights: list[int], raw: str) -> dict:
                   note["flight"] == flight and latest.get(flight, ("", ""))[1] == nid and
                   bool(re.fullmatch(r"\d\d:\d\d", t)) and t in body)
         if finding == "confirmed_arrival" and ok:
-            ok = bool(re.search(r"(ATA|on block|landed)[^\n]{0,40}" + re.escape(t) + r"|" + re.escape(t) +
-                                r"[^\n]{0,20}(ATA|on block|landed)", body, re.I))
+            # the line that gives the time must say on block / landed / ATA, and must not deny it
+            lines = [l for l in body.splitlines() if t in l]
+            ok = any(re.search(r"\b(ATA|on block|landed)\b", l, re.I) and not re.search(NEGATION, l, re.I) for l in lines)
         if finding == "estimate_only" and ok:
             ok = bool(re.search(r"(ETA|estimate)[^\n]{0,30}" + re.escape(t), body, re.I))
         out.append({"flight": flight, "finding": finding if ok else "unverified",
@@ -117,6 +130,13 @@ async def run_claude(flights: list[int]) -> str:
         shutil.rmtree(work, ignore_errors=True)
 
 
+def release_key(rid: str):
+    """An ended request that gave no result frees its idempotency key: asking again runs Claude again."""
+    for k, v in list(BY_KEY.items()):
+        if v == rid:
+            del BY_KEY[k]
+
+
 async def worker(rid: str):
     req = REQUESTS[rid]
     try:
@@ -137,6 +157,8 @@ async def worker(rid: str):
             req.update(status="failed", error=str(e)[:200])
         log("failed", request_id=rid, error=str(e)[:200])
     finally:
+        if req["status"] != "done":
+            release_key(rid)
         req["event"].set()
 
 
@@ -179,6 +201,8 @@ def public(rid: str) -> dict:
 
 async def poll(request):
     rid = request.match_info["rid"]
+    if not signed(b"GET " + rid.encode(), request.headers.get("X-Signature")):
+        return web.json_response({"error": "bad_signature"}, status=401)
     if rid not in REQUESTS:
         return web.json_response({"error": "not_found"}, status=404)
     wait = min(float(request.query.get("wait", "0")), 30.0)
@@ -203,6 +227,7 @@ async def cancel(request):
     r = REQUESTS[rid]
     if r["status"] == "running":
         r["status"] = "abandoned"
+        release_key(rid)
         log("abandoned", request_id=rid)
     return web.json_response(public(rid))
 

@@ -13,6 +13,9 @@ SECRET = b"test-secret"
 def sign(b): return hmac.new(SECRET, b, hashlib.sha256).hexdigest()
 
 
+def gsig(rid): return {"X-Signature": sign(b"GET " + rid.encode())}
+
+
 async def post(http, url, payload):
     b = json.dumps(payload).encode()
     async with http.post(url + "/v1/requests", data=b, headers={"X-Signature": sign(b)}) as r:
@@ -20,7 +23,7 @@ async def post(http, url, payload):
 
 
 def server(port, delay, deadline, log):
-    env = dict(os.environ, WEBHOOK_SECRET=SECRET.decode(), WEBHOOK_PORT=str(port), FAKE_CLAUDE_DELAY=str(delay),
+    env = dict(os.environ, MORNING_ENV_FILE="/nonexistent", WEBHOOK_SECRET=SECRET.decode(), WEBHOOK_PORT=str(port), FAKE_CLAUDE_DELAY=str(delay),
                WEBHOOK_DEADLINE_S=str(deadline), WEBHOOK_LOG=str(log))
     p = subprocess.Popen([sys.executable, str(ROOT / "claude_webhook" / "server.py")], env=env)
     time.sleep(1.2)
@@ -55,15 +58,21 @@ async def main():
             s2, j2 = await post(http, url, {"skill": "carrier-notes", "idempotency_key": "room-a:5188,7745", "input": {"flights": [5188, 7745]}})
             check("duplicate: 200, same request_id", s2 == 200 and j2["request_id"] == rid and j2["duplicate"], j2)
             async with http.get(f"{url}/v1/requests/{rid}", params={"wait": "10"}) as r:
+                check("unsigned poll refused", r.status == 401, r.status)
+            async with http.get(f"{url}/v1/requests/{rid}", params={"wait": "10"}, headers=gsig(rid)) as r:
                 res = await r.json()
             check("success: long-poll returns done", res["status"] == "done" and time.time() - t0 < 3, res["status"])
+            async with http.get(f"{url}/v1/requests/req_unknown", headers=gsig("req_unknown")) as r:
+                check("unknown request id (webhook restarted): 404, not a crash", r.status == 404, r.status)
             # 3. deadline passed
             p.terminate(); p.wait()
             p = server(8392, delay=5.0, deadline=1.5, log=log)
             s, j = await post(http, url, {"skill": "carrier-notes", "idempotency_key": "room-b", "input": {"flights": [5188]}})
-            async with http.get(f"{url}/v1/requests/{j['request_id']}", params={"wait": "10"}) as r:
+            async with http.get(f"{url}/v1/requests/{j['request_id']}", params={"wait": "10"}, headers=gsig(j["request_id"])) as r:
                 res = await r.json()
             check("deadline: status expired", res["status"] == "expired", res)
+            s3, j3 = await post(http, url, {"skill": "carrier-notes", "idempotency_key": "room-b", "input": {"flights": [5188]}})
+            check("deadline: asking again runs a new request", s3 == 202 and j3["request_id"] != j["request_id"], (s3, j3))
             # 4. caller hung up while Claude works: closed as abandoned, late result logged, never returned
             p.terminate(); p.wait()
             p = server(8392, delay=1.5, deadline=10, log=log)
@@ -74,7 +83,7 @@ async def main():
                 d = await r.json()
             check("hang-up: request closed as abandoned", d["status"] == "abandoned", d)
             await asyncio.sleep(2.2)
-            async with http.get(f"{url}/v1/requests/{rid}") as r:
+            async with http.get(f"{url}/v1/requests/{rid}", headers=gsig(rid)) as r:
                 res = await r.json()
             check("hang-up: late result never delivered", res["status"] == "abandoned" and "result" not in res, res)
             events = [json.loads(l)["event"] for l in log.read_text().splitlines()]

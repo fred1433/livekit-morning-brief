@@ -1,0 +1,17 @@
+[Unit]
+Description=Webhook in front of Claude (runs the read-only carrier-notes skill with claude -p)
+# Install only on the machine where the claude CLI is logged in on a Claude plan.
+# In the recorded call, this webhook ran on another machine (the builder's Mac, standing in
+# for the team's Claude setup) and the agent reached it through CLAUDE_WEBHOOK_URL.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=morningbrief
+WorkingDirectory=/opt/morning-brief
+EnvironmentFile=/etc/morning-brief/env
+ExecStart=/opt/morning-brief/.venv/bin/python claude_webhook/server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

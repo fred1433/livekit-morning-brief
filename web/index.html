@@ -114,26 +114,37 @@ function onAttrs(attrs) {
   const get = k => { try { return attrs[k] ? JSON.parse(attrs[k]) : undefined } catch { return undefined } };
   const board = get('board'), focus = get('focus'), check = get('check');
   if (board && board.length) { lastBoard = board; lastFocus = focus || []; renderBoard(lastBoard, lastFocus); mark('ui_board', {focus: lastFocus}); }
-  if (check) {
-    const box = $('check');
-    if (check.state === 'running') {
-      box.className = 'check on'; mark('ui_check_running', {flights: check.flights});
-      $('checkTitle').textContent = 'Claude is reading the carrier notes';
-      $('checkSub').textContent = 'Flights ' + check.flights.join(' and ');
-      const t0 = Date.now(); clearInterval(checkTimer);
-      checkTimer = setInterval(() => $('checkClock').textContent = ((Date.now() - t0) / 1000).toFixed(1) + ' s', 100);
-    } else if (check.state === 'done') {
-      clearInterval(checkTimer); box.className = 'check on done'; mark('ui_check_done', {seconds: check.seconds});
-      $('checkTitle').textContent = 'Result ready';
-      const conf = check.result.filter(r => r.finding === 'confirmed_arrival');
-      const est = check.result.filter(r => r.finding !== 'confirmed_arrival');
-      $('checkSub').textContent = [...conf.map(r => `${r.flight} arrived ${r.time}`), ...est.map(r => `${r.flight} estimate only`)].join(', ');
-      $('checkClock').textContent = check.seconds.toFixed(1) + ' s';
-      renderBoard(lastBoard, est.map(r => r.flight), Object.fromEntries(conf.map(r => [r.flight, r.time])));
-    } else if (check.state === 'expired' || check.state === 'failed') {
-      clearInterval(checkTimer); box.className = 'check on';
-      $('checkTitle').textContent = 'No answer from Claude in time'; $('checkSub').textContent = 'Nothing was changed.';
-    }
+  if (check) renderCheck(check);
+}
+
+// the clock counts from the request's own start time, so other attribute changes never reset it
+let checkStarted = null, checkState = null;
+function renderCheck(check) {
+  const box = $('check');
+  if (check.state === checkState && check.started === checkStarted) return;
+  const fresh = check.started !== checkStarted;
+  checkState = check.state; checkStarted = check.started;
+  if (check.state === 'running') {
+    box.className = 'check on';
+    if (fresh) mark('ui_check_running', {flights: check.flights});
+    $('checkTitle').textContent = 'Claude is reading the carrier notes';
+    $('checkSub').textContent = 'Flights ' + check.flights.join(' and ');
+    clearInterval(checkTimer);
+    const t0 = check.started * 1000;
+    const tick = () => $('checkClock').textContent = Math.max(0, (Date.now() - t0) / 1000).toFixed(1) + ' s';
+    tick(); checkTimer = setInterval(tick, 100);
+  } else if (check.state === 'done') {
+    clearInterval(checkTimer); box.className = 'check on done'; mark('ui_check_done', {seconds: check.seconds});
+    $('checkTitle').textContent = 'Result ready';
+    const label = r => r.finding === 'confirmed_arrival' ? `${r.flight} arrived ${r.time}`
+      : r.finding === 'estimate_only' ? `${r.flight} estimate only` : r.finding === 'no_note' ? `${r.flight} no note` : `${r.flight} not verified`;
+    $('checkSub').textContent = check.result.map(label).join(', ');
+    $('checkClock').textContent = check.seconds.toFixed(1) + ' s';
+    // the board keeps showing the API record, which the agent cannot change; Claude's finding stays on this card
+  } else if (check.state && check.state !== 'idle') {
+    clearInterval(checkTimer); box.className = 'check on';
+    $('checkTitle').textContent = check.state === 'expired' ? 'No answer from Claude in time' : 'The Claude check failed';
+    $('checkSub').textContent = 'Nothing was changed. You can ask again.';
   }
 }
 
@@ -171,7 +182,11 @@ async function start() {
   $('call').disabled = true;
   ac = new AudioContext({sampleRate: 48000}); await ac.resume();
   mixDest = ac.createMediaStreamDestination();
-  const r = await fetch('/api/token', {method: 'POST'}); const {url, token, room: roomName} = await r.json();
+  const key = new URLSearchParams(location.search).get('key') || '';
+  const r = await fetch('/api/token', {method: 'POST', headers: {'X-Call-Key': key}});
+  const tok = await r.json();
+  if (!r.ok) throw new Error(tok.error || ('HTTP ' + r.status));
+  const {url, token, room: roomName} = tok;
   room = new LK.Room({adaptiveStream: false});
   room.on(LK.RoomEvent.TrackSubscribed, (track, pub, p) => {
     if (track.kind !== 'audio') return;
@@ -182,14 +197,15 @@ async function start() {
   });
   room.on(LK.RoomEvent.ParticipantAttributesChanged, (changed, p) => { if (!p.isLocal) onAttrs(p.attributes); });
   room.on(LK.RoomEvent.Disconnected, () => {
-    mark('disconnected'); room = null; clearInterval(checkTimer);
+    mark('disconnected'); room = null; clearInterval(checkTimer); checkStarted = checkState = null;
     $('call').textContent = 'Start the brief again'; $('call').classList.remove('live');
   });
   room.registerTextStreamHandler('lk.transcription', async (reader, info) => {
     const who = info.identity === room.localParticipant.identity ? 'user' : 'agent';
     const id = reader.info.attributes?.['lk.segment_id'] || reader.info.id;
     let text = '';
-    for await (const chunk of reader) { text += chunk; caption(id, who, text); }
+    // in film mode the caller's words are the script of the pre-recorded clip, shown as it plays
+    for await (const chunk of reader) { text += chunk; if (!(FILM && who === 'user')) caption(id, who, text); }
     mark('transcript', {who, id, text});
   });
   await room.connect(url, token); mark('connected', {room: roomName});
@@ -220,6 +236,7 @@ window.__playClip = async (name, text) => {
   src.connect(window.__mic); src.connect(mixDest);
   const done = new Promise(res => src.onended = res);
   mark('clip_start', {name, text, duration: audio.duration}); src.start();
+  caption('clip-' + name + '-' + Date.now(), 'user', text);
   await done; mark('clip_end', {name});
 };
 window.__agentOn = () => agentOn;

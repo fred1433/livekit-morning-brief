@@ -1,17 +1,22 @@
-# Ubuntu 24.04 VM (Lima, on the builder's Mac). Agent installed with deploy/install-ubuntu.sh
-## before reboot  2026-11-07T22:57:19Z
+# Ubuntu 24.04 VM (Lima, on the builder's Mac). Installed with deploy/install-ubuntu.sh.
+# Units on this server: morning-brief-agent morning-brief-api morning-brief-web (enabled at boot). The Claude webhook (claude_webhook/server.py)
+# ran on the builder's Mac, standing in for the team's Claude setup; morning-brief-webhook is not enabled here.
+## before reboot  2026-11-07T23:58:22Z
 Ubuntu 24.04.4 LTS
-boot_id=4c560cba-d61c-4eae-8e97-a67de7344195
-up since 2026-11-07 19:25:26
-enabled
-active
-## sudo systemctl reboot sent  2026-11-07T22:57:20Z
-## after reboot, nobody logged in to start anything  2026-11-07T22:57:53Z
-boot_id=a329cd34-6d7a-4a74-974a-600a439f7d9c
-up since 2026-11-07 19:57:24
-active
-active
-active
-NRestarts=0
-ActiveEnterTimestamp=Sat 2026-11-07 19:57:29 -03
-"message": "registered worker", "level": "INFO", "name": "livekit.agents", "agent_name": "morning-brief", "deployment": "", "id": "AW_MShwZJ6ULrUH", "region": "US Central A"
+boot_id=38d9f3c9-427f-49e4-b3a7-04a5de3f93b3
+up since 2026-11-07 20:54:07
+morning-brief-agent: enabled active
+morning-brief-api: enabled active
+morning-brief-web: enabled active
+## sudo systemctl reboot sent  2026-11-07T23:58:24Z
+## after reboot, no one logged in to start anything  2026-11-08T00:01:38Z
+boot_id=ba671da1-6fdc-482a-9135-3b0b01fb4317
+up since 2026-11-07 20:58:36
+morning-brief-agent: active, started Sat 2026-11-07 20:58:59 -03
+morning-brief-api: active, started Sat 2026-11-07 20:58:59 -03
+morning-brief-web: active, started Sat 2026-11-07 20:58:59 -03
+2026-11-07T20:59:38-03:00 morning-brief-agent registered with LiveKit Cloud (region US Central A)
+## calls on this boot, from the agent's journal (journalctl -b -u morning-brief-agent)
+2026-11-07T21:01:47-03:00 call started room=brief-af0ea04f boot_id=ba671da1-6fdc-482a-9135-3b0b01fb4317   (attempt: the Claude check did not start)
+2026-11-07T21:04:38-03:00 call started room=brief-6f1c767c boot_id=ba671da1-6fdc-482a-9135-3b0b01fb4317   (the filmed call on the demo page)
+## between the two calls, one file was copied into /opt/morning-brief (the caller's first pre-recorded clip, with a shorter pause); no service was restarted

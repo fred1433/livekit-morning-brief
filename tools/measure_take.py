@@ -31,9 +31,11 @@ agent_tr = [e for e in ev if e["type"] == "transcript" and e["who"] == "agent"]
 prev = 0
 for tr in agent_tr:
     seg_on = [e for e in on if prev < e["t"] <= tr["t"]]
-    seg_off = [e for e in off if prev < e["t"] <= tr["t"] + 300]
     if seg_on:
-        rows.append({"who": "agent", "start": vt(seg_on[0]["t"] / 1000), "end": vt(seg_off[-1]["at"] / 1000) if seg_off else vt(tr["t"] / 1000),
+        # the speech ends at the first silence after the last onset of this segment
+        offs_after = [e for e in off if e["t"] >= seg_on[-1]["t"]]
+        end_ms = offs_after[0]["at"] if offs_after else tr["t"]
+        rows.append({"who": "agent", "start": vt(seg_on[0]["t"] / 1000), "end": vt(max(end_ms, seg_on[0]["t"]) / 1000),
                      "text": tr["text"].strip()})
     prev = tr["t"]
 clips = {e["name"]: e for e in ev if e["type"] == "clip_start"}
@@ -61,5 +63,13 @@ webhook = {"request_id": acc["request_id"], "sent": vt(acc["t"]), "returned": vt
 q1 = turns[0]
 ans = next(r for r in rows if r["who"] == "agent" and r["start"] > q1["end_of_speech"] and ("eighty" in r["text"] or "5188" in r["text"]))
 q1["answer_audible_s"] = round(ans["start"] - q1["end_of_speech"], 2)
-out.write_text(json.dumps({"video_duration_s": vt(frames[-1]), "rows": rows, "turns": turns, "webhook": webhook}, indent=1))
+# what the caller lived through for the Claude check: from the end of the ask to the spoken result
+q2 = next(t for t in turns if "carrier notes" in t["caller"])
+webhook["caller_wait_s"] = round(vt(spoken["t"] / 1000) - q2["end_of_speech"], 2)
+webhook["result_spoken_at"] = vt(spoken["t"] / 1000)
+board = next((e for e in ev if e["type"] == "ui_board"), None)
+q2_row = next(r for r in rows if r["who"] == "caller" and "carrier notes" in r["text"])
+out.write_text(json.dumps({"video_duration_s": vt(frames[-1]), "rows": rows, "turns": turns, "webhook": webhook,
+                           "board_shown_at": vt(board["t"] / 1000) if board else None,
+                           "carrier_check_asked_at": q2_row["start"]}, indent=1))
 print(json.dumps({"turns": turns, "webhook": {k: v for k, v in webhook.items() if k != "result"}}, indent=1))

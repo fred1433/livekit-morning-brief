@@ -20,12 +20,19 @@ async def run(folder):
 
 
 async def main():
-    from agent import follow_up, result_sentence
+    from agent import result_sentence
     ok = True
-    for folder, follow in (("inbox", 7745), ("inbox_swapped", 5188)):
+    expected = {
+        "inbox": {5188: ("confirmed_arrival", "06:12", "N-0631"), 7745: ("estimate_only", "07:40", "N-0547")},
+        "inbox_swapped": {5188: ("estimate_only", "07:40", "N-0547"), 7745: ("confirmed_arrival", "06:12", "N-0631")},
+    }
+    for folder, want in expected.items():
         res, s = await run(folder)
         sentence = result_sentence(res)
-        good = follow_up(res) == [follow] and sentence.endswith("That's the one to follow up.")
+        got = {f["flight"]: (f["finding"], f["time"], f["note_id"]) for f in res["flights"]}
+        good = got == want   # both flights, both findings, both times, both cited notes; a missing flight fails
+        if not good:
+            print("   expected", want, "\n   got     ", got)
         ok &= good
         print(("PASS " if good else "FAIL ") + f"{folder}: Claude took {s:.1f} s -> {sentence}")
     print("ALL PASS" if ok else "SOME FAILED")
